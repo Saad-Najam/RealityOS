@@ -361,79 +361,60 @@ export const INITIAL_SCENARIOS: Scenario[] = [
   },
   {
     id: 9,
-    title: "University Exam Postponed Screenshot",
+    title: "Official Meteorological Department Alert",
     category: "source_literacy",
-    difficulty: "medium",
-    format: "WHATSAPP_FORWARD",
-    sender: "Class Rep (CR)",
-    content: "Hey guys, just received this official notification from FAST University admin. Tomorrow's final exam is canceled! Pls confirm if this is true.",
-    mediaUrl: "https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=800&auto=format&fit=crop", // school background placeholder
-    correctAction: "INVESTIGATE",
-    groundTruthVerdict: "FABRICATED",
-    learningObjective: "Recognize elements of photoshopped institutional notifications (fonts, date alignments).",
-    manipulationType: "Forged Screenshot",
-    explanation: "Forged screenshots are commonly created in minutes using inspect-element or image editors. Always verify directly through the official student portal rather than relying on image forwards.",
+    difficulty: "easy",
+    format: "X_POST",
+    sender: "PakMetDept (Verified)",
+    content: "⚠️ WEATHER ADVISORY: A strong dust storm followed by moderate to heavy rainfall is expected across Karachi and coastal areas of Sindh tonight. Citizens are advised to secure loose structures and avoid unnecessary travel. Stay safe! ⛈️",
+    correctAction: "TRUST",
+    groundTruthVerdict: "TRUST",
+    learningObjective: "Recognize verified official weather alerts and understand when to trust timely warning sources.",
+    manipulationType: "None (Verified Source)",
+    explanation: "This is an official advisory posted by the Pakistan Meteorological Department's verified handle. In times of urgent weather warnings, verified primary agency channels should be trusted and followed immediately for safety.",
     skill: "Source Verification",
-    xp: 140,
-    tells: [
-      { id: "t1", elementId: "font-mismatch", label: "📝 Font Inconsistency", description: "The font for the date does not match the font utilized in the body of the notification.", x: 20, y: 15 },
-      { id: "t2", elementId: "logo-blurry", label: "🏢 Blurry Institutional Logo", description: "The logo has high compression artifacts around its borders, suggesting it was copy-pasted onto a fake canvas.", x: 10, y: 10 },
-      { id: "t3", elementId: "signature-flat", label: "✍️ Floating Signature", description: "The registrar's signature has a white background block that clips over the footer borders.", x: 80, y: 80 }
-    ],
+    xp: 100,
     evidenceGraph: {
       nodes: [
-        { id: "c1", label: "Claim: University exam postponed", type: "claim", description: "A circulated screenshot of a cancellation memo." },
-        { id: "s1", label: "Registrar Office Notice Board", type: "source", description: "Official registrar channel or official portal account." },
-        { id: "e1", label: "Memo missing from official board", type: "evidence", status: "contradicts", description: "The registrar website does not list any such postponement memo for today." },
-        { id: "v1", label: "Verdict: Forged Screenshot", type: "verdict", status: "misleading", description: "A photoshopped notification created to spread panic/confusion among students." }
+        { id: "c1", label: "Claim: Heavy rain advisory", type: "claim", description: "Official Meteorological department announces incoming storm." },
+        { id: "s1", label: "Verified Met Office Account", type: "source", description: "The post originates from the official verified meteorological agency handle." },
+        { id: "e1", label: "Corroboration: Major News Outlets", type: "evidence", status: "verified", description: "Dawn and Express Tribune are running live weather alerts corroborating the same advisory." },
+        { id: "v1", label: "Verdict: Authentic Warning", type: "verdict", status: "verified", description: "The advisory is authentic and originates from the primary authorized meteorological source." }
       ],
       edges: [
-        { from: "s1", to: "e1", relationship: "details" },
-        { from: "e1", to: "c1", relationship: "contradicts" },
+        { from: "s1", to: "c1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "supports" },
         { from: "e1", to: "v1", relationship: "resolves" }
       ]
     }
   },
   {
     id: 10,
-    title: "The 200% Crime Spike",
-    category: "manipulation",
-    difficulty: "hard",
-    format: "X_POST",
-    sender: "KarachiWatchdog",
-    content: "📊 CRITICAL DATA: Criminal incidents in this university sector have spiked by a shocking 200% this month alone under the new campus security chief! Resign now! 📉❌ #security #fail",
-    correctAction: "INVESTIGATE",
-    groundTruthVerdict: "MISLEADING",
-    learningObjective: "Spot manipulation in small sample sizes where percentages exaggerate low absolute numbers.",
-    manipulationType: "Statistical Manipulation (Small Sample Bias)",
-    explanation: "A '200% spike' sounds catastrophic, but in a small dataset it can represent a move from 1 incident to 3. This is statistical cherry-picking to construct a biased narrative.",
-    skill: "Statistical Literacy",
-    xp: 180,
+    title: "Official Academic Portal Extension Notice",
+    category: "source_literacy",
+    difficulty: "easy",
+    format: "NEWS_HEADLINE",
+    sender: "FAST University Registrar Office",
+    content: "📢 Spring Registration Fee Payment deadline has been extended to Friday, 20th August. Eligible students can download their updated fee challan from the official slate portal.",
+    correctAction: "TRUST",
+    groundTruthVerdict: "TRUST",
+    learningObjective: "Acknowledge official academic portal communications and understand verified extension alerts.",
+    manipulationType: "None (Verified Channel)",
+    explanation: "This is a real administrative notification posted directly on the verified university portal. Since it links to the primary university portal, it should be trusted rather than dismissed as a rumor.",
+    skill: "Source Verification",
+    xp: 100,
     evidenceGraph: {
       nodes: [
-        { id: "c1", label: "Claim: Crime spiked by 200%", type: "claim", description: "Post claims campus security has catastrophically failed." },
-        { id: "s1", label: "Police & Security Records", type: "source", description: "Official crime reports of the sector." },
-        { id: "e1", label: "Absolute numbers: 1 to 3 incidents", type: "evidence", status: "contradicts", description: "Record shows crimes went from 1 case last month to 3 cases this month. A change of 2 incidents total." },
-        { id: "v1", label: "Verdict: Misleading Statistics", type: "verdict", status: "misleading", description: "The math is technically correct but the percentages distort the reality due to the tiny sample size." }
+        { id: "c1", label: "Claim: Registration deadline extended", type: "claim", description: "Registrar office extended payment deadline." },
+        { id: "s1", label: "Official Academic Portal", type: "source", description: "FAST academic portal system." },
+        { id: "e1", label: "Challan download system active", type: "evidence", status: "verified", description: "The portal's fee section shows the new deadline dates and active challan prints." },
+        { id: "v1", label: "Verdict: Official Directive", type: "verdict", status: "verified", description: "The extension is true and verified directly via the school's primary administrative database." }
       ],
       edges: [
-        { from: "s1", to: "e1", relationship: "details" },
-        { from: "e1", to: "c1", relationship: "contradicts" },
+        { from: "s1", to: "c1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "supports" },
         { from: "e1", to: "v1", relationship: "resolves" }
       ]
-    },
-    lateralSearchQuery: "Sector security crime report statistics absolute numbers",
-    lateralClues: [
-      {
-        question: "Why is presenting percentages without absolute numbers misleading?",
-        options: [
-          "Because percentages are always false",
-          "It hides the actual scale of the data, making small, random changes look like massive trends",
-          "It makes it harder to calculate mathematical averages"
-        ],
-        correctIndex: 1,
-        explanation: "In tiny sample sizes (like 1 to 3), percentages explode, leading readers to believe a massive surge occurred when it was actually a minor statistical fluctuation."
-      }
-    ]
+    }
   }
 ];

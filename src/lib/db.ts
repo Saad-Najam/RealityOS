@@ -203,6 +203,7 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(KEYS.PROFILE, JSON.stringify(updated));
+      window.dispatchEvent(new Event('realityos-profile-updated'));
     }
     return updated;
   },
@@ -277,6 +278,7 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(KEYS.SKILLS, JSON.stringify(updated));
+      window.dispatchEvent(new Event('realityos-profile-updated'));
     }
     return updated;
   },
@@ -351,6 +353,7 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(KEYS.BASELINE, JSON.stringify(scores));
+      window.dispatchEvent(new Event('realityos-profile-updated'));
     }
     return scores;
   },
@@ -537,7 +540,7 @@ export const dbService = {
             campus,
             score,
             updated_at: new Date().toISOString()
-          });
+          }, { onConflict: 'user_id' });
         }
       } catch (e) {
         console.warn("Supabase leaderboard sync failed", e);

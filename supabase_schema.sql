@@ -39,6 +39,7 @@ create table if not exists public.scenarios (
   format text not null, -- 'X_POST', 'WHATSAPP_FORWARD', 'INSTAGRAM_CARD', 'NEWS_HEADLINE'
   media_url text, -- URL to deepfake images or diagrams
   correct_action text not null, -- 'TRUST', 'SHARE', 'INVESTIGATE', 'IGNORE'
+  ground_truth_verdict text, -- 'TRUST', 'MISLEADING', 'FABRICATED'
   learning_objective text not null,
   manipulation_type text, -- 'Clickbait', 'Emotional Appeal', 'Out of Context', 'AI Fake'
   explanation text not null, -- Why it is correct
@@ -64,7 +65,7 @@ create table if not exists public.attempts (
 -- LEADERBOARDS TABLE
 create table if not exists public.leaderboards (
   id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.profiles(id) on delete cascade not null,
+  user_id uuid references public.profiles(id) on delete cascade unique not null,
   username text not null,
   campus text not null,
   score integer not null,
@@ -93,6 +94,8 @@ alter table public.investigations enable row level security;
 -- Create basic access policies
 create policy "Allow public read access to scenarios" on public.scenarios for select using (true);
 create policy "Users can read any leaderboard" on public.leaderboards for select using (true);
+create policy "Users can insert their own leaderboard score" on public.leaderboards for insert with check (auth.uid() = user_id);
+create policy "Users can update their own leaderboard score" on public.leaderboards for update using (auth.uid() = user_id);
 
 create policy "Users can read their own profile" on public.profiles for select using (auth.uid() = id);
 create policy "Users can update their own profile" on public.profiles for update using (auth.uid() = id);
