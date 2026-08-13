@@ -155,18 +155,18 @@ export async function POST(req: NextRequest) {
       demoResult = { ...DEMO_RESPONSES.speech };
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const groqApiKey = process.env.GROQ_API_KEY;
 
     if (demoResult) {
-      // Simulate small delay for realistic UX retrieval feeling
       await new Promise(r => setTimeout(r, 1200));
       return NextResponse.json({
         ...demoResult,
-        ...(!apiKey ? { mode: "demo" } : {})
+        ...(!geminiApiKey && !groqApiKey ? { mode: "demo" } : {})
       });
     }
 
-    // Default fallback verification RAG structure
+    // Default fallback verification RAG structure (offline mode)
     const fallbackResult = {
       verdict: "UNVERIFIED",
       confidence: 50,
@@ -183,17 +183,17 @@ export async function POST(req: NextRequest) {
           { from: "s1", to: "c1", relationship: "details" }
         ]
       },
-      ...(!apiKey ? { mode: "demo" } : {})
+      ...(!geminiApiKey && !groqApiKey ? { mode: "demo" } : {})
     };
 
-    // Attempt Gemini call if API key exists
-    if (apiKey) {
+    // 1. Attempt Gemini call if API key exists
+    if (geminiApiKey) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -225,14 +225,73 @@ Response must be strict JSON matching this interface:
 
         clearTimeout(timeoutId);
 
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text);
-          return NextResponse.json(parsed);
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            return NextResponse.json(JSON.parse(text));
+          }
         }
       } catch (geminiError) {
-        console.error("Gemini RAG verification request error or timeout", geminiError);
+        console.warn("Gemini query failed or timed out, trying Groq fallback", geminiError);
+      }
+    }
+
+    // 2. Attempt Groq Fallback if API key exists
+    if (groqApiKey) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000); // Fast 6s timeout for Groq
+
+        const response = await fetch(
+          'https://api.groq.com/openai/v1/chat/completions',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqApiKey}`
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: 'llama3-8b-8192',
+              messages: [
+                {
+                  role: 'system',
+                  content: 'You are a professional fact-checker. Respond ONLY with a valid JSON object matching the requested schema.'
+                },
+                {
+                  role: 'user',
+                  content: `Analyze the following user-submitted news claim: "${query}"
+Decompose it into atomic sub-claims and evaluate their truthfulness based on scientific consensus and primary journalism.
+Response must be strict JSON matching this interface:
+{
+  "verdict": "SUPPORTED" | "MISLEADING" | "FABRICATED" | "UNVERIFIED",
+  "confidence": number (0-100),
+  "summary": string,
+  "claims": Array<{ "text": string, "status": "SUPPORTED" | "CONTRADICTED" | "UNVERIFIED", "why": string }>,
+  "graph": {
+    "nodes": Array<{ "id": string, "label": string, "type": "claim" | "source" | "evidence" | "verdict", "status"?: "supports" | "contradicts" | "neutral", "description": string }>,
+    "edges": Array<{ "from": string, "to": string, "relationship": "supports" | "contradicts" | "details" }>
+  }
+}`
+                }
+              ],
+              response_format: { type: 'json_object' }
+            })
+          }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.choices?.[0]?.message?.content;
+          if (text) {
+            return NextResponse.json(JSON.parse(text));
+          }
+        }
+      } catch (groqError) {
+        console.error("Groq RAG query failed or timed out", groqError);
       }
     }
 
