@@ -105,7 +105,13 @@ export const dbService = {
     // Local fallback
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(KEYS.PROFILE);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse local profile, resetting defaults", e);
+        }
+      }
       localStorage.setItem(KEYS.PROFILE, JSON.stringify(DEFAULT_PROFILE));
     }
     return DEFAULT_PROFILE;
@@ -173,7 +179,13 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(KEYS.SKILLS);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse skills data, resetting defaults", e);
+        }
+      }
       localStorage.setItem(KEYS.SKILLS, JSON.stringify(DEFAULT_SKILLS));
     }
     return DEFAULT_SKILLS;
@@ -232,7 +244,13 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(KEYS.BASELINE);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse baseline skills", e);
+        }
+      }
     }
     return null;
   },
@@ -307,7 +325,14 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(KEYS.ATTEMPTS);
-      return stored ? JSON.parse(stored) : [];
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse attempts history", e);
+        }
+      }
+      return [];
     }
     return [];
   },
@@ -403,7 +428,13 @@ export const dbService = {
 
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(KEYS.LEADERBOARD);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse leaderboard scores", e);
+        }
+      }
       localStorage.setItem(KEYS.LEADERBOARD, JSON.stringify(DEFAULT_LEADERBOARD));
     }
     return DEFAULT_LEADERBOARD;
