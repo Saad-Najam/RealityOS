@@ -47,6 +47,7 @@ export interface LeaderboardEntry {
 const KEYS = {
   PROFILE: 'realityos_profile',
   SKILLS: 'realityos_skills',
+  BASELINE: 'realityos_baseline_skills',
   ATTEMPTS: 'realityos_attempts',
   LEADERBOARD: 'realityos_leaderboard',
   INVESTIGATIONS: 'realityos_investigations'
@@ -200,6 +201,74 @@ export const dbService = {
       localStorage.setItem(KEYS.SKILLS, JSON.stringify(updated));
     }
     return updated;
+  },
+
+  async getBaselineSkillScores(): Promise<SkillScores | null> {
+    if (supabase) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from('baseline_skill_scores')
+            .select('*')
+            .eq('profile_id', user.id)
+            .single();
+          if (data && !error) {
+            return {
+              source_verification: data.source_verification,
+              bias_detection: data.bias_detection,
+              deepfake_awareness: data.deepfake_awareness,
+              emotional_manipulation: data.emotional_manipulation,
+              statistical_literacy: data.statistical_literacy,
+              lateral_reading: data.lateral_reading,
+              ai_literacy: data.ai_literacy
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Supabase baseline fetch failed", e);
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(KEYS.BASELINE);
+      if (stored) return JSON.parse(stored);
+    }
+    return null;
+  },
+
+  async saveBaselineIfMissing(scores: SkillScores): Promise<SkillScores> {
+    const existing = await this.getBaselineSkillScores();
+    if (existing) {
+      return existing;
+    }
+
+    if (supabase) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('baseline_skill_scores')
+            .insert({
+              profile_id: user.id,
+              source_verification: scores.source_verification,
+              bias_detection: scores.bias_detection,
+              deepfake_awareness: scores.deepfake_awareness,
+              emotional_manipulation: scores.emotional_manipulation,
+              statistical_literacy: scores.statistical_literacy,
+              lateral_reading: scores.lateral_reading,
+              ai_literacy: scores.ai_literacy
+            });
+        }
+      } catch (e) {
+        console.warn("Supabase baseline insert failed", e);
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(KEYS.BASELINE, JSON.stringify(scores));
+    }
+    return scores;
   },
 
   async getScenarios(): Promise<Scenario[]> {

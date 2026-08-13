@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Simulated RAG evidence database for common demo inputs
 const DEMO_RESPONSES: Record<string, any> = {
-  "coffee": {
+  coffee: {
     verdict: "MISLEADING",
     confidence: 85,
     summary: "The claim that drinking coffee increases lifespan by 10 years is an exaggeration of observational health findings.",
@@ -27,7 +27,7 @@ const DEMO_RESPONSES: Record<string, any> = {
       ]
     }
   },
-  "lockdown": {
+  lockdown: {
     verdict: "FABRICATED",
     confidence: 95,
     summary: "Claims stating that secret world agencies are scheduling immediate general lockdowns are baseless conspiracy theories.",
@@ -40,6 +40,87 @@ const DEMO_RESPONSES: Record<string, any> = {
         { id: "c1", label: "Claim: Scheduled global lockdown", type: "claim", description: "Baseless viral alerts warning of imminent travel bans." },
         { id: "s1", label: "Source: World Health Org (Tier 1 Official)", type: "source", description: "Official statements regarding current global disease monitoring." },
         { id: "e1", label: "Evidence: No lockdowns requested", type: "evidence", status: "contradicts", description: "WHO confirms focus is standard epidemiological surveillance, not population lockdown." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  earthquake: {
+    verdict: "MISLEADING",
+    confidence: 88,
+    summary: "The claim of a seismic grid breakdown at the local nuclear site causing immediate evacuation alerts is false. Minor tremors occurred but infrastructure is fully secure.",
+    claims: [
+      { text: "A major earthquake hit the city.", status: "SUPPORTED", why: "Seismic data confirmed a 6.1 magnitude earthquake occurred centered 25km north-east." },
+      { text: "Nuclear reactor cracked and is leaking radiation.", status: "CONTRADICTED", why: "State nuclear safety commissions confirm all reactors and grid nodes are structurally intact." },
+      { text: "Official mandate orders citizen door keys left unlocked.", status: "CONTRADICTED", why: "Evacuation guidelines verify official notices never ask citizens to leave properties unlocked." }
+    ],
+    graph: {
+      nodes: [
+        { id: "c1", label: "Claim: Nuclear Reactor Leak", type: "claim", description: "Viral rumor warning of nuclear grid cracking." },
+        { id: "s1", label: "Source: Nuclear Commission (Tier 1)", type: "source", description: "Official safety report statements." },
+        { id: "e1", label: "Evidence: Zero radiation variance", type: "evidence", status: "contradicts", description: "Radiation monitors show completely normal ambient readings." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  exams: {
+    verdict: "FABRICATED",
+    confidence: 95,
+    summary: "Exams are NOT postponed. The circular circulating on WhatsApp uses a forged university letterhead template from 2020.",
+    claims: [
+      { text: "FAST, NUST, and board exams are postponed.", status: "CONTRADICTED", why: "Official university academic calendars and registrar offices confirm schedules remain unchanged." },
+      { text: "Postponement is due to immediate climate emergency.", status: "CONTRADICTED", why: "No emergency alerts or weather notices have been issued by the city meteorological bureau." }
+    ],
+    graph: {
+      nodes: [
+        { id: "c1", label: "Claim: University Exams Cancelled", type: "claim", description: "Forged announcement circulated in student groups." },
+        { id: "s1", label: "Source: FAST Registrar (Tier 1)", type: "source", description: "Verified university announcements portal." },
+        { id: "e1", label: "Evidence: Announcement declared fake", type: "evidence", status: "contradicts", description: "Registrar issued alert warning students against fake template letters." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  health: {
+    verdict: "FABRICATED",
+    confidence: 99,
+    summary: "The viral claim that hot lemon water cures all stages of cancer is a dangerous medical myth with no clinical supporting evidence.",
+    claims: [
+      { text: "Hot water with lemon releases anti-cancer compounds.", status: "CONTRADICTED", why: "Peer-reviewed medical oncology journals show lemon juice has no systemic therapeutic effect on cancer cells." },
+      { text: "The remedy has been verified by research hospitals.", status: "CONTRADICTED", why: "Named research hospitals (e.g. Shaukat Khanum, Mayo Clinic) explicitly deny releasing this circular." }
+    ],
+    graph: {
+      nodes: [
+        { id: "c1", label: "Claim: Hot Lemon Water Cures Cancer", type: "claim", description: "Viral alternative health chain message." },
+        { id: "s1", label: "Source: World Cancer Research (Tier 1)", type: "source", description: "Oncology advisory documentation." },
+        { id: "e1", label: "Evidence: Clinical trials show no basis", type: "evidence", status: "contradicts", description: "Lemon water provides hydration and Vitamin C but zero anti-tumor properties." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  speech: {
+    verdict: "FABRICATED",
+    confidence: 92,
+    summary: "The viral video clip claiming the Prime Minister has ordered an indefinite nationwide social media shutdown is a deepfake synthesized using AI voice cloning.",
+    claims: [
+      { text: "Prime Minister announced complete internet ban.", status: "CONTRADICTED", why: "No official state broadcaster (PTV) aired this statement, and telecom regulators confirm no shutdown orders." },
+      { text: "Video audio matches original vocal frequencies.", status: "CONTRADICTED", why: "Acoustic spectrum analysis shows robotic temporal gaps and constant background noise indicating AI voice cloning." }
+    ],
+    graph: {
+      nodes: [
+        { id: "c1", label: "Claim: Prime Minister Internet Ban Video", type: "claim", description: "Synthetic deepfake clip circulating on TikTok/X." },
+        { id: "s1", label: "Source: Telecom Authority (Tier 1)", type: "source", description: "Official statement from PTA." },
+        { id: "e1", label: "Evidence: AI vocal tells verified", type: "evidence", status: "contradicts", description: "Vocal frequency analysis matches known ElevenLabs voice clone patterns." }
       ],
       edges: [
         { from: "s1", to: "e1", relationship: "details" },
@@ -60,16 +141,29 @@ export async function POST(req: NextRequest) {
     
     // Check if we match a demo RAG case
     let demoResult = null;
-    if (lowerQuery.includes('coffee') || lowerQuery.includes('longevity') || lowerQuery.includes('10 years')) {
-      demoResult = DEMO_RESPONSES.coffee;
-    } else if (lowerQuery.includes('lockdown') || lowerQuery.includes('confinement') || lowerQuery.includes('cash')) {
-      demoResult = DEMO_RESPONSES.lockdown;
+    if (/coffee|longevity|10 years|espresso/i.test(lowerQuery)) {
+      demoResult = { ...DEMO_RESPONSES.coffee };
+    } else if (/lockdown|confinement|cash|secret/i.test(lowerQuery)) {
+      demoResult = { ...DEMO_RESPONSES.lockdown };
+    } else if (/earthquake|tremor|seismic|quake|tsunami|dam|radiation|reactor|grid/i.test(lowerQuery)) {
+      demoResult = { ...DEMO_RESPONSES.earthquake };
+    } else if (/exam|postpone|postponement|exams|board|fast|nust|uet|date sheet|cancel/i.test(lowerQuery)) {
+      demoResult = { ...DEMO_RESPONSES.exams };
+    } else if (/lemon|cancer|cure|remedy|health|hot water/i.test(lowerQuery)) {
+      demoResult = { ...DEMO_RESPONSES.health };
+    } else if (/minister|imran|shahbaz|ban|internet|shutdown|speech|audio|video|clip/i.test(lowerQuery)) {
+      demoResult = { ...DEMO_RESPONSES.speech };
     }
+
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (demoResult) {
       // Simulate small delay for realistic UX retrieval feeling
       await new Promise(r => setTimeout(r, 1200));
-      return NextResponse.json(demoResult);
+      return NextResponse.json({
+        ...demoResult,
+        ...(!apiKey ? { mode: "demo" } : {})
+      });
     }
 
     // Default fallback verification RAG structure
@@ -88,23 +182,27 @@ export async function POST(req: NextRequest) {
         edges: [
           { from: "s1", to: "c1", relationship: "details" }
         ]
-      }
+      },
+      ...(!apiKey ? { mode: "demo" } : {})
     };
 
     // Attempt Gemini call if API key exists
-    const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             body: JSON.stringify({
               contents: [{
                 parts: [{
                   text: `Analyze the following user-submitted news claim: "${query}"
-Decompose it into atomic sub-claims and evaluate their truthfulness based on scientific concensus and primary journalism.
+Decompose it into atomic sub-claims and evaluate their truthfulness based on scientific consensus and primary journalism.
 Response must be strict JSON matching this interface:
 {
   "verdict": "SUPPORTED" | "MISLEADING" | "FABRICATED" | "UNVERIFIED",
@@ -125,6 +223,8 @@ Response must be strict JSON matching this interface:
           }
         );
 
+        clearTimeout(timeoutId);
+
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
@@ -132,7 +232,7 @@ Response must be strict JSON matching this interface:
           return NextResponse.json(parsed);
         }
       } catch (geminiError) {
-        console.error("Gemini RAG verification request error", geminiError);
+        console.error("Gemini RAG verification request error or timeout", geminiError);
       }
     }
 

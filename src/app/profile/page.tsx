@@ -11,6 +11,7 @@ import Header from '@/components/Header';
 export default function ProfileDNA() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<SkillScores | null>(null);
+  const [baseline, setBaseline] = useState<SkillScores | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -18,11 +19,25 @@ export default function ProfileDNA() {
     const loadData = async () => {
       const p = await dbService.getProfile();
       const s = await dbService.getSkillScores();
+      const b = await dbService.getBaselineSkillScores();
       setProfile(p);
       setSkills(s);
+      setBaseline(b);
     };
     loadData();
   }, []);
+
+  const getAverageScore = (s: SkillScores) => {
+    return Math.round(
+      (s.source_verification + 
+       s.bias_detection + 
+       s.deepfake_awareness + 
+       s.emotional_manipulation + 
+       s.statistical_literacy + 
+       s.lateral_reading + 
+       s.ai_literacy) / 7
+    );
+  };
 
   if (!mounted || !profile || !skills) {
     return (
@@ -169,22 +184,79 @@ export default function ProfileDNA() {
             </div>
           </div>
 
-          {/* Radar Chart */}
-          <div className="glass-panel p-6 rounded-2xl border border-sky-950 flex flex-col items-center justify-center min-h-[300px]">
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-4">Media DNA Map</span>
-            <div className="w-full h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                  <PolarGrid stroke="#1e293b" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569' }} axisLine={false} />
-                  <Radar name="Skills" dataKey="value" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#111a2e', border: '1px solid #1e293b', borderRadius: 8 }}
-                    itemStyle={{ color: '#38bdf8' }}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
+          {/* Radar Chart Column Stack */}
+          <div className="space-y-6">
+            
+            {/* RealityOS Impact Score Card */}
+            {(() => {
+              const currentAvg = getAverageScore(skills);
+              const baselineAvg = baseline ? getAverageScore(baseline) : null;
+              const delta = baselineAvg !== null ? currentAvg - baselineAvg : 0;
+              
+              return (
+                <div className="glass-panel p-6 rounded-2xl border border-sky-950 text-left space-y-4 relative overflow-hidden bg-slate-900/10 shadow-[0_0_20px_rgba(56,189,248,0.02)]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Measurable Growth</span>
+                    {baselineAvg !== null ? (
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-black border ${
+                        delta > 0 
+                          ? 'bg-emerald-950/40 border-emerald-900/60 text-emerald-400' 
+                          : delta === 0 
+                            ? 'bg-slate-900 border-slate-950 text-slate-500' 
+                            : 'bg-amber-950/20 border-amber-900/60 text-amber-500'
+                      }`}>
+                        {delta > 0 ? `+${delta}` : delta} Competency Score
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-slate-900 border border-slate-950 text-slate-500">
+                        Calibration Pending
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[11px] text-slate-400 font-semibold block">RealityOS Impact Score</span>
+                    <div className="text-2xl font-black text-white flex items-center">
+                      Media Literacy: {baselineAvg !== null ? `${baselineAvg}%` : '--'}
+                      <span className="mx-2 text-slate-500">→</span>
+                      <span className="text-sky-400">{currentAvg}%</span>
+                    </div>
+                  </div>
+
+                  {baselineAvg === null && (
+                    <div className="pt-2">
+                      <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                        Complete your onboarding diagnostic scan to capture your baseline skills and trace your measurable impact.
+                      </p>
+                      <Link 
+                        href="/diagnostic" 
+                        className="inline-flex items-center text-xs font-bold text-sky-400 hover:text-sky-300 underline"
+                      >
+                        Take Onboarding Diagnostic →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Radar Chart */}
+            <div className="glass-panel p-6 rounded-2xl border border-sky-950 flex flex-col items-center justify-center min-h-[300px]">
+              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-4">Media DNA Map</span>
+              <div className="w-full h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
+                    <PolarGrid stroke="#1e293b" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569' }} axisLine={false} />
+                    <Radar name="Skills" dataKey="value" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.25} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#111a2e', border: '1px solid #1e293b', borderRadius: 8 }}
+                      itemStyle={{ color: '#38bdf8' }}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 

@@ -362,6 +362,13 @@ export default function ManipulationLab() {
                         </span>
                       </div>
 
+                      {verificationResult.mode === 'demo' && (
+                        <div className="p-3 bg-amber-950/15 border border-amber-900/40 rounded-xl text-amber-300 text-xs font-medium leading-relaxed flex items-center space-x-2">
+                          <span className="animate-pulse text-sm">⚠️</span>
+                          <span><strong>Offline Demo Mode:</strong> Gemini API key is not configured. Running on simulated local intelligence patterns.</span>
+                        </div>
+                      )}
+
                       <div className="space-y-2">
                         <div className="text-xs text-slate-400">
                           AI Verification Confidence: <span className="font-bold text-sky-400">{verificationResult.confidence}%</span>

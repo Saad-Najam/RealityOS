@@ -118,6 +118,7 @@ export default function DiagnosticQuiz() {
     });
 
     await dbService.updateSkillScores(newScores);
+    await dbService.saveBaselineIfMissing(newScores as SkillScores);
     await dbService.updateProfile({ 
       completed_diagnostic: true,
       xp: 200,

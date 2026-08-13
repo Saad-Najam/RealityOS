@@ -107,3 +107,22 @@ create policy "Users can record attempts" on public.attempts for insert with che
 
 create policy "Users can view their own investigations" on public.investigations for select using (auth.uid() = user_id);
 create policy "Users can manage their own investigations" on public.investigations for all using (auth.uid() = user_id);
+
+-- BASELINE SKILL SCORES TABLE (MIL curriculum competencies captured after diagnostic)
+create table if not exists public.baseline_skill_scores (
+  profile_id uuid references public.profiles(id) on delete cascade primary key,
+  source_verification integer default 50,
+  bias_detection integer default 50,
+  deepfake_awareness integer default 50,
+  emotional_manipulation integer default 50,
+  statistical_literacy integer default 50,
+  lateral_reading integer default 50,
+  ai_literacy integer default 50,
+  captured_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.baseline_skill_scores enable row level security;
+
+create policy "Users can view their own baseline skill scores" on public.baseline_skill_scores for select using (auth.uid() = profile_id);
+create policy "Users can insert their own baseline skill scores" on public.baseline_skill_scores for insert with check (auth.uid() = profile_id);
+
