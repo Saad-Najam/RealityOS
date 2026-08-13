@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --background: #090d16;
+  --foreground: #f1f5f9;
+  
+  --card: #111a2e;
+  --card-border: rgba(56, 189, 248, 0.15);
+  
+  --primary: #38bdf8;
+  --primary-glow: rgba(56, 189, 248, 0.25);
+  --secondary: #a855f7;
+  --accent: #f59e0b;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #06b6d4;
+  
+  --glow-cyan: 0 0 15px rgba(6, 182, 212, 0.4);
+  --glow-purple: 0 0 15px rgba(168, 85, 247, 0.4);
+  --glow-emerald: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Neon Glow utilities */
+.glow-cyan {
+  box-shadow: var(--glow-cyan);
+}
+
+.glow-purple {
+  box-shadow: var(--glow-purple);
+}
+
+.glow-emerald {
+  box-shadow: var(--glow-emerald);
+}
+
+/* Custom glassmorphism card */
+.glass-panel {
+  background: rgba(17, 26, 46, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-interactive {
+  background: rgba(17, 26, 46, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-interactive:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(56, 189, 248, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Radar chart wrapper style override */
+.recharts-legend-item-text {
+  color: #94a3b8 !important;
+}
+
+/* Matrix rain code style background animation support */
+@keyframes matrix {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.matrix-line {
+  animation: matrix 15s linear infinite;
+}
+

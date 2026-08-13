@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+{% include head.html %}
+<body>
+  <!-- Skip link for accessibility -->
+  <a href="#intro" class="skip-link">Skip to main content</a>
+
+  <!-- Allows linking to the top of the page. -->
+  <a id="top" aria-hidden="true"></a>
+
+  {% unless page.hideHeader %}
+  {% include header.html %}
+  {% endunless %}
+
+  <main id="main-content">
+  {% if page.isArticle %}
+  <div class="container article">
+  {% else %}
+  <div class="container">
+  {% endif %}
+
+    <div class="content-wrapper">
+
+      <!-- Show the path to this page on non-home pages. -->
+      {% if page.showPath %}
+        <nav class="page-path" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          &gt;
+          {% if page.underDocsPath %}
+          <a href="/DocumentationIndex">Docs</a>
+          &gt;
+          {% endif %}
+          {% if page.underArticlesPath %}
+          <a href="/articles">Articles</a>
+          &gt;
+          {% endif %}
+          <a href="{{ page.url }}" aria-current="page">
+            {% if page.pathNameOverride %}
+              {{ page.pathNameOverride }}
+            {% else %}
+              {{ page.title }}
+            {% endif %}
+          </a>
+        </nav>
+      {% endif %}
+
+      <!-- This includes the content of the page. -->
+      {% include anchor_headings.html html=content anchorBody="#" anchorClass="header-link" anchorAttrs='aria-label="Link to %heading%"' %}
+
+      {% if page.showBackToTop %}
+        <a class="back-to-top" href="#top">Back to Top</a>
+      {% endif %}
+    </div>
+  </div>
+  </main>
+  {% include footer.html %}
+
+  {% if page.showBackToTop %}
+    {% include backtotop.html %}
+  {% endif %}
+
+  <script type="text/javascript" src="/assets/js/gif-playback.js" defer></script>
+</body>
+</html>
