@@ -158,11 +158,12 @@ export async function POST(req: NextRequest) {
     const geminiApiKey = process.env.GEMINI_API_KEY;
     const groqApiKey = process.env.GROQ_API_KEY;
 
-    if (demoResult) {
+    // Match a demo RAG case ONLY when API keys are not configured
+    if (!geminiApiKey && !groqApiKey && demoResult) {
       await new Promise(r => setTimeout(r, 1200));
       return NextResponse.json({
         ...demoResult,
-        ...(!geminiApiKey && !groqApiKey ? { mode: "demo" } : {})
+        mode: "demo"
       });
     }
 

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Activity, HelpCircle, Shield, AlertTriangle, Fingerprint } from 'lucide-react';
-import { dbService, SkillScores } from '@/lib/db';
+import { dbService, SkillScores, Profile } from '@/lib/db';
 import Header from '@/components/Header';
 
 interface DiagnosticQuestion {
@@ -79,6 +79,16 @@ const DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
       { text: "Run a reverse image search on the photo to see if it is from an older incident or different location.", scoreWeight: 100 }
     ],
     skill: "lateral_reading"
+  },
+  {
+    id: 7,
+    text: "You read an article about a new tax policy. The headline calls it a 'Devastating Blow to Families' and uses loaded phrases like 'corrupt politicians' and 'robbery', but quotes only one opposition leader.",
+    options: [
+      { text: "Agree with the article immediately because the language feels passionate and true.", scoreWeight: 20 },
+      { text: "Share it on your stories to show how corrupt the system is.", scoreWeight: 45 },
+      { text: "Recognize that the loaded vocabulary and single-sourced perspective indicate severe ideological bias, and seek out neutral reporting that contains both sides.", scoreWeight: 100 }
+    ],
+    skill: "bias_detection"
   }
 ];
 
@@ -102,9 +112,9 @@ export default function DiagnosticQuiz() {
   };
 
   const submitDiagnostic = async () => {
-    const newScores: Partial<SkillScores> = {
+    const newScores: SkillScores = {
       source_verification: 50,
-      bias_detection: 60,
+      bias_detection: 50,
       deepfake_awareness: 50,
       emotional_manipulation: 50,
       statistical_literacy: 50,
@@ -114,16 +124,23 @@ export default function DiagnosticQuiz() {
 
     DIAGNOSTIC_QUESTIONS.forEach((q, idx) => {
       const weight = answers[idx] ?? 50;
-      newScores[q.skill] = weight;
+      newScores[q.skill as keyof SkillScores] = weight;
     });
 
     await dbService.updateSkillScores(newScores);
-    await dbService.saveBaselineIfMissing(newScores as SkillScores);
-    await dbService.updateProfile({ 
+    await dbService.saveBaselineIfMissing(newScores);
+
+    const profile = await dbService.getProfile();
+    const updates: Partial<Profile> = {
       completed_diagnostic: true,
-      xp: 200,
-      streak: 1
-    });
+      streak: Math.max(profile.streak, 1)
+    };
+
+    if (!profile.completed_diagnostic) {
+      updates.xp = profile.xp + 200; // 200 XP first-time reward
+    }
+    
+    await dbService.updateProfile(updates);
 
     setTimeout(() => {
       router.push('/profile');

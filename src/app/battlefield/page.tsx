@@ -244,13 +244,14 @@ export default function Battlefield() {
     });
 
     // Record XP and achievements updates
-    const xpGained = score >= 50 ? 300 : 100;
+    const xpGained = score >= 60 ? 300 : 100;
     if (profile) {
       const updatedProfile = await dbService.updateProfile({
         xp: profile.xp + xpGained,
         streak: profile.streak + 1
       });
       setProfile(updatedProfile);
+      await dbService.syncLeaderboardScore(updatedProfile.username, updatedProfile.campus, updatedProfile.xp);
 
       // Sync simulation stats locally
       if (typeof window !== 'undefined') {
@@ -264,7 +265,7 @@ export default function Battlefield() {
 
     // Adaptively adjust skill scores
     if (skills) {
-      const scale = score >= 75 ? 8 : -4;
+      const scale = score >= 60 ? 8 : -4;
       await dbService.updateSkillScores({
         lateral_reading: Math.max(10, Math.min(100, skills.lateral_reading + scale)),
         source_verification: Math.max(10, Math.min(100, skills.source_verification + scale))

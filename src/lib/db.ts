@@ -84,11 +84,62 @@ const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
   { username: 'GraphWizard', campus: 'IBA Karachi', score: 620 }
 ];
 
+let cachedUser: any = null;
+export async function ensureAuth() {
+  if (!supabase) return null;
+  if (cachedUser) return cachedUser;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      cachedUser = user;
+      return user;
+    }
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (data?.user && !error) {
+      cachedUser = data.user;
+      
+      const localProfile = typeof window !== 'undefined' ? localStorage.getItem('realityos_profile') : null;
+      const parsedProfile = localProfile ? JSON.parse(localProfile) : null;
+      if (parsedProfile) {
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          username: parsedProfile.username === 'Guest Detective' ? `Agent_${data.user.id.slice(0, 5)}` : parsedProfile.username,
+          xp: parsedProfile.xp,
+          level: parsedProfile.level,
+          streak: parsedProfile.streak,
+          completed_diagnostic: parsedProfile.completed_diagnostic,
+          campus: parsedProfile.campus
+        });
+      }
+      
+      const localSkills = typeof window !== 'undefined' ? localStorage.getItem('realityos_skills') : null;
+      const parsedSkills = localSkills ? JSON.parse(localSkills) : null;
+      if (parsedSkills) {
+        await supabase.from('user_skill_scores').upsert({
+          profile_id: data.user.id,
+          source_verification: parsedSkills.source_verification,
+          bias_detection: parsedSkills.bias_detection,
+          deepfake_awareness: parsedSkills.deepfake_awareness,
+          emotional_manipulation: parsedSkills.emotional_manipulation,
+          statistical_literacy: parsedSkills.statistical_literacy,
+          lateral_reading: parsedSkills.lateral_reading,
+          ai_literacy: parsedSkills.ai_literacy
+        });
+      }
+      
+      return data.user;
+    }
+  } catch (e) {
+    console.warn("Supabase anonymous auth check failed", e);
+  }
+  return null;
+}
+
 export const dbService = {
   async getProfile(): Promise<Profile> {
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           const { data, error } = await supabase
             .from('profiles')
@@ -131,12 +182,19 @@ export const dbService = {
 
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           await supabase
             .from('profiles')
-            .update(updates)
-            .eq('id', user.id);
+            .upsert({
+              id: user.id,
+              username: updated.username,
+              xp: updated.xp,
+              level: updated.level,
+              streak: updated.streak,
+              completed_diagnostic: updated.completed_diagnostic,
+              campus: updated.campus
+            });
         }
       } catch (e) {
         console.warn("Supabase profile update failed", e);
@@ -152,7 +210,7 @@ export const dbService = {
   async getSkillScores(): Promise<SkillScores> {
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           const { data, error } = await supabase
             .from('user_skill_scores')
@@ -197,12 +255,20 @@ export const dbService = {
 
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           await supabase
             .from('user_skill_scores')
-            .update(updates)
-            .eq('profile_id', user.id);
+            .upsert({
+              profile_id: user.id,
+              source_verification: updated.source_verification,
+              bias_detection: updated.bias_detection,
+              deepfake_awareness: updated.deepfake_awareness,
+              emotional_manipulation: updated.emotional_manipulation,
+              statistical_literacy: updated.statistical_literacy,
+              lateral_reading: updated.lateral_reading,
+              ai_literacy: updated.ai_literacy
+            });
         }
       } catch (e) {
         console.warn("Supabase skill update failed", e);
@@ -218,7 +284,7 @@ export const dbService = {
   async getBaselineSkillScores(): Promise<SkillScores | null> {
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           const { data, error } = await supabase
             .from('baseline_skill_scores')
@@ -263,7 +329,7 @@ export const dbService = {
 
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           await supabase
             .from('baseline_skill_scores')
@@ -306,17 +372,21 @@ export const dbService = {
   async getAttempts(): Promise<Attempt[]> {
     if (supabase) {
       try {
-        const { data, error } = await supabase
-          .from('attempts')
-          .select('*');
-        if (data && !error) {
-          return data.map(d => ({
-            scenarioId: d.scenario_id,
-            selectedAction: d.selected_action,
-            isCorrect: d.is_correct,
-            xpEarned: d.xp_earned,
-            timestamp: d.created_at
-          }));
+        const user = await ensureAuth();
+        if (user) {
+          const { data, error } = await supabase
+            .from('attempts')
+            .select('*')
+            .eq('user_id', user.id);
+          if (data && !error) {
+            return data.map(d => ({
+              scenarioId: d.scenario_id,
+              selectedAction: d.selected_action,
+              isCorrect: d.is_correct,
+              xpEarned: d.xp_earned,
+              timestamp: d.created_at
+            }));
+          }
         }
       } catch (e) {
         console.warn("Supabase attempts fetch failed", e);
@@ -386,12 +456,12 @@ export const dbService = {
     });
 
     // Update Leaderboard score
-    await this.syncLeaderboardScore(updatedProfile.username, updatedProfile.campus, updatedProfile.xp + xpGained);
+    await this.syncLeaderboardScore(updatedProfile.username, updatedProfile.campus, updatedProfile.xp);
 
     // Sync to Supabase in background if enabled
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           await supabase.from('attempts').insert({
             user_id: user.id,
@@ -459,7 +529,7 @@ export const dbService = {
 
     if (supabase) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await ensureAuth();
         if (user) {
           await supabase.from('leaderboards').upsert({
             user_id: user.id,
@@ -475,3 +545,11 @@ export const dbService = {
     }
   }
 };
+
+export function getUserRank(xp: number): string {
+  if (xp < 500) return 'Novice Investigator';
+  if (xp < 1500) return 'Source Scout';
+  if (xp < 3000) return 'Fact Detective';
+  if (xp < 5000) return 'Media Guardian';
+  return '🏆 Reality Master';
+}

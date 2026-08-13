@@ -4,13 +4,13 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Trophy, Flame, BrainCircuit, User, Library, Cpu, Activity, ShieldAlert } from 'lucide-react';
-import { dbService, Profile } from '@/lib/db';
+import { dbService, Profile, getUserRank } from '@/lib/db';
 
 export default function Header() {
   const pathname = usePathname();
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  // Poll database profile to keep XP, level, and streak live
+  // Listen to profile updates to keep XP, level, and streak live
   useEffect(() => {
     const fetchProfile = async () => {
       const p = await dbService.getProfile();
@@ -18,9 +18,8 @@ export default function Header() {
     };
     fetchProfile();
 
-    // Trigger update on storage changes or custom events
-    const interval = setInterval(fetchProfile, 1000);
-    return () => clearInterval(interval);
+    window.addEventListener('realityos-profile-updated', fetchProfile);
+    return () => window.removeEventListener('realityos-profile-updated', fetchProfile);
   }, []);
 
   const navItems = [
@@ -31,13 +30,7 @@ export default function Header() {
     { name: 'Media DNA', href: '/profile', icon: Activity },
   ];
 
-  const getRankName = (xp: number) => {
-    if (xp < 500) return 'Novice Investigator';
-    if (xp < 1200) return 'Source Scout';
-    if (xp < 2500) return 'Fact Detective';
-    if (xp < 4000) return 'Media Guardian';
-    return '🏆 Reality Master';
-  };
+
 
   const xpProgress = profile ? (profile.xp % 500) / 5 : 0;
   const xpNeeded = profile ? 500 - (profile.xp % 500) : 500;
@@ -93,7 +86,7 @@ export default function Header() {
             {/* Level and XP Progress Widget */}
             <div className="hidden lg:flex flex-col text-right">
               <div className="text-xs text-slate-400 font-medium">
-                {getRankName(profile.xp)} <span className="text-sky-400 font-bold">Lvl {profile.level}</span>
+                {getUserRank(profile.xp)} <span className="text-sky-400 font-bold">Lvl {profile.level}</span>
               </div>
               <div className="w-32 bg-slate-950 rounded-full h-1.5 mt-1 overflow-hidden border border-sky-950">
                 <div 

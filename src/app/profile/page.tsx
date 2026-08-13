@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { ShieldCheck, Flame, Trophy, Award, Brain, ArrowRight, UserCheck, Play, HelpCircle, EyeOff } from 'lucide-react';
-import { dbService, Profile, SkillScores } from '@/lib/db';
+import { dbService, Profile, SkillScores, getUserRank } from '@/lib/db';
 import Header from '@/components/Header';
 
 export default function ProfileDNA() {
@@ -138,7 +138,7 @@ export default function ProfileDNA() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Level Rank:</span>
-                <span className="text-indigo-400 font-bold">Level {profile.level}</span>
+                <span className="text-indigo-400 font-bold">Lvl {profile.level} ({getUserRank(profile.xp)})</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Streaks:</span>

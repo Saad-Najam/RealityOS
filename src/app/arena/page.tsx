@@ -7,7 +7,7 @@ import {
   Search, Eye, Award, ArrowRight, Share2, 
   Flame, Trophy, UserCheck, Shield, ChevronRight, Activity, RotateCcw
 } from 'lucide-react';
-import { dbService, Profile, SkillScores } from '@/lib/db';
+import { dbService, Profile, SkillScores, getUserRank } from '@/lib/db';
 import { Scenario } from '@/lib/scenariosData';
 import Header from '@/components/Header';
 
@@ -204,11 +204,12 @@ export default function RealityArena() {
     if (!currentScenario || finalVerdict) return;
 
     setFinalVerdict(verdict);
-    let actionEquivalent: 'TRUST' | 'SHARE' | 'IGNORE' | 'INVESTIGATE' = 'INVESTIGATE';
-    if (verdict === 'TRUST') actionEquivalent = 'TRUST';
-    if (verdict === 'IGNORE') actionEquivalent = 'IGNORE';
     
-    const correct = currentScenario.correctAction === 'INVESTIGATE' || currentScenario.correctAction === actionEquivalent;
+    let correct = false;
+    if (verdict === 'TRUST') correct = currentScenario.groundTruthVerdict === 'TRUST';
+    if (verdict === 'MISLEADING') correct = currentScenario.groundTruthVerdict === 'MISLEADING';
+    if (verdict === 'IGNORE') correct = currentScenario.groundTruthVerdict === 'FABRICATED';
+
     setIsCorrect(correct);
     evaluateStatChanges('INVESTIGATE', correct);
 
@@ -301,7 +302,7 @@ export default function RealityArena() {
             <div className="text-sm font-black text-sky-400 flex items-center justify-between mt-1">
               <span>Lvl {profile?.level || 1}</span>
               <span className="text-[10px] bg-sky-950 px-2 py-0.5 border border-sky-900 rounded text-slate-400 uppercase font-semibold">
-                {profile?.xp && profile.xp >= 2500 ? 'Fact Detective' : 'Novice Investigator'}
+                {profile ? getUserRank(profile.xp) : 'Novice Investigator'}
               </span>
             </div>
           </div>

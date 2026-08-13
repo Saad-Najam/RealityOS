@@ -32,6 +32,7 @@ export interface Scenario {
   content: string;
   mediaUrl?: string;
   correctAction: 'TRUST' | 'SHARE' | 'INVESTIGATE' | 'IGNORE';
+  groundTruthVerdict: 'TRUST' | 'MISLEADING' | 'FABRICATED';
   learningObjective: string;
   manipulationType?: string;
   explanation: string;
@@ -61,6 +62,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "Chacha Shakeel (Family Group)",
     content: "🚨 URGENT: Government announces tomorrow as a public holiday. All universities, including FAST, NED, and IBA will remain closed. Exams are postponed! Forward to all groups!",
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "FABRICATED",
     learningObjective: "Identify unverified WhatsApp forwards and practice cross-referencing with official university channels.",
     manipulationType: "Urgency and Fake Authority",
     explanation: "Sensational holiday notices circulating in WhatsApp groups are often fabricated. The correct first action is to search for confirmation on the university's official website or official social media accounts rather than sharing it blindly.",
@@ -105,6 +107,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     content: "Pope Francis spotted breaking the internet in a customized white designer puffer coat on the streets of Rome! 🧥🔥 #pope #fashion #style #streetwear",
     mediaUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop", // placeholder abstraction
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "FABRICATED",
     learningObjective: "Examine physical and lighting inconsistencies in AI-generated photos.",
     manipulationType: "AI Image Generation",
     explanation: "This viral image is entirely synthetic, created by Midjourney. Key visual tells include the blurry edge of the Pope's glasses, the strap of the handbag blending into his collar, and reflection mismatch in the eyes.",
@@ -138,6 +141,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "AnonymousVoice_PK",
     content: "🔥 LEAKED AUDIO: Leading politician admits to rigging local university campus elections in private phone call. The truth is finally out! Listen before they take this down! 🔊👇",
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "FABRICATED",
     learningObjective: "Understand that audio clips can be cloned and that AI voice detection requires metadata and context checking.",
     manipulationType: "Synthetic Speech (AI Voice Clone)",
     explanation: "Voice clones can be generated with under 5 seconds of sample audio. This clip has metallic digital artifacts, lacks natural breath pauses, and has perfectly flat intonation. Always wait for trusted audio-forensic verification.",
@@ -179,6 +183,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "DailyHealthUpdates",
     content: "☕ BREAKING STUDY: Drinking coffee adds 10 years to your lifespan! Double up your espresso intake starting today to live forever!",
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "MISLEADING",
     learningObjective: "Distinguish between actual science and exaggerated clickbait reporting.",
     manipulationType: "Exaggerated Claims / Cherry-picking",
     explanation: "This headline exaggerates the findings of an observational study. The actual research only found a mild correlation between moderate coffee consumption and a minor decrease in mortality risk, but did not prove causality or imply a 10-year lifespan boost.",
@@ -221,6 +226,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     content: "⚠️ THIS IS WHAT'S HAPPENING UNDER THE NEW GOVERNMENT! Look at our supermarkets. Completely stripped of basic supplies. Total economic disaster! 🛒😡 #inflation #collapse",
     mediaUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop", // generic placeholder
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "MISLEADING",
     learningObjective: "Recognize when an authentic, unaltered image is repackaged in a false context to create a political narrative.",
     manipulationType: "False Context (Out-of-date media)",
     explanation: "The photo is real, but it was taken in 2020 during the early panic-buying phase of the COVID-19 pandemic in a different country, not under the current government or region claimed by the poster.",
@@ -262,6 +268,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "Ami (Family Group)",
     content: "🎓 Higher Education Commission laptop scheme reopened! Free laptops with 5G internet for all Pakistani students. Claim your free laptop today before registration closes! Apply here: http://hec-laptops.gov-registration-portal.net/",
     correctAction: "IGNORE",
+    groundTruthVerdict: "FABRICATED",
     learningObjective: "Analyze URL structure to detect phishing and scam domains masquerading as official government resources.",
     manipulationType: "Phishing / Domain Spoofing",
     explanation: "Official government websites in Pakistan end with `.gov.pk`. The domain `gov-registration-portal.net` is a private, unsecure website designed to steal personal information by imitating government branding.",
@@ -290,6 +297,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "TruthBombNews",
     content: "🚨 WORLD HEALTH SCHEMERS ARE SECRETLY PREPARING THE NEXT LOCKDOWN! PREPARE YOUR FAMILIES FOR GLOBAL INCARCERATION!",
     correctAction: "IGNORE",
+    groundTruthVerdict: "MISLEADING",
     learningObjective: "Recognize fearmongering and clickbait headline styles designed to trigger visceral panic.",
     manipulationType: "Emotional Manipulation (Fearmongering)",
     explanation: "This headline uses screaming capital letters, alarming trigger words ('SCHEMERS', 'INCARCERATION'), and offers zero source references. Its purpose is to trigger fear and anxiety to drive clicks.",
@@ -318,6 +326,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "Group Admin",
     content: "🍋 Lemon Peels are 10,000 times stronger than chemotherapy! They kill cancer cells while leaving healthy cells intact. Keep this secret safe from Big Pharma. Share to save lives! 🙏💚",
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "FABRICATED",
     learningObjective: "Evaluate pseudo-medical claims and look for clinical evidence rather than anonymous conspiracy theories.",
     manipulationType: "Pseudo-Science",
     explanation: "This claim dates back to email hoaxes from 2011. While lemons contain antioxidants, there is zero clinical scientific evidence proving lemon peels cure cancer or outperform oncology drugs.",
@@ -360,6 +369,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     content: "Hey guys, just received this official notification from FAST University admin. Tomorrow's final exam is canceled! Pls confirm if this is true.",
     mediaUrl: "https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=800&auto=format&fit=crop", // school background placeholder
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "FABRICATED",
     learningObjective: "Recognize elements of photoshopped institutional notifications (fonts, date alignments).",
     manipulationType: "Forged Screenshot",
     explanation: "Forged screenshots are commonly created in minutes using inspect-element or image editors. Always verify directly through the official student portal rather than relying on image forwards.",
@@ -393,6 +403,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     sender: "KarachiWatchdog",
     content: "📊 CRITICAL DATA: Criminal incidents in this university sector have spiked by a shocking 200% this month alone under the new campus security chief! Resign now! 📉❌ #security #fail",
     correctAction: "INVESTIGATE",
+    groundTruthVerdict: "MISLEADING",
     learningObjective: "Spot manipulation in small sample sizes where percentages exaggerate low absolute numbers.",
     manipulationType: "Statistical Manipulation (Small Sample Bias)",
     explanation: "A '200% spike' sounds catastrophic, but in a small dataset it can represent a move from 1 incident to 3. This is statistical cherry-picking to construct a biased narrative.",
