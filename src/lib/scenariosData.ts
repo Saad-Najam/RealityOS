@@ -193,7 +193,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     evidenceGraph: {
       nodes: [
         { id: "c1", label: "Claim: Coffee adds 10 years to life", type: "claim", description: "Exaggerated news report on longevity study." },
-        { id: "s1", label: "Primary Academic Study", type: "source", description: "New England Journal of Medicine research paper." },
+        { id: "s1", label: "Primary Academic Study", type: "source", description: "New England Journal of Medicine (2012) research paper." },
         { id: "e1", label: "Actual findings: Correlation only", type: "evidence", status: "contradicts", description: "The study showed a 10-15% reduced risk of death over a 12-year window for coffee drinkers, not a 10-year extension of lifespan." },
         { id: "v1", label: "Verdict: Misleading Headline", type: "verdict", status: "misleading", description: "Research exists but the claim exaggerates the scale and type of findings." }
       ],
@@ -542,7 +542,7 @@ export const INITIAL_SCENARIOS: Scenario[] = [
     groundTruthVerdict: "MISLEADING",
     learningObjective: "Distinguish between exaggerated science headlines and actual research findings by checking sample size, relative vs absolute risk, and original study source.",
     manipulationType: "Statistical Exaggeration + Clickbait Headline",
-    explanation: "A real University College London study (2021, n=7,959) found associations between sleep deprivation and cognitive decline. However, the '340% more likely' figure is a relative risk misrepresentation. The absolute risk increase is far smaller. The word 'FINALLY' implies false scientific consensus, and 'changes everything' is editorial hyperbole not found in the original paper.",
+    explanation: "A real University College London study (2021, n=7,959) found associations between sleep deprivation and cognitive decline. However, the '340% more likely' figure is a relative risk misrepresentation. The absolute risk increase is far smaller. The word 'FINALLY' implies false scientific consensus, and 'changes everything' is editorial hyperbole not found in the original paper. (Source study: https://www.nature.com/articles/s41467-021-22354-2)",
     skill: "Statistical Literacy",
     xp: 200,
     biasesTriggered: ["Authority Bias", "Confirmation Bias"],

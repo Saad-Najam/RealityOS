@@ -8,10 +8,46 @@ import {
   Flame, Trophy, UserCheck, Shield, ChevronRight, Activity, RotateCcw
 } from 'lucide-react';
 import { dbService, Profile, SkillScores, getUserRank } from '@/lib/db';
-import type { Scenario } from '@/lib/scenariosData';
+import type { Scenario, EvidenceNode, EvidenceEdge } from '@/lib/scenariosData';
 import Header from '@/components/Header';
 
 import { useLanguage } from '@/context/LanguageContext';
+
+const calculateDeltas = (action: string, correct: boolean) => {
+  let fDelta = 0;
+  let cDelta = 0;
+
+  if (correct) {
+    fDelta = Math.floor(Math.random() * 40) + 30; // +30-70 followers
+    cDelta = Math.floor(Math.random() * 4) + 3;    // +3-7% credibility
+  } else {
+    if (action === 'SHARE') {
+      fDelta = -(Math.floor(Math.random() * 80) + 100); // lose 100-180 followers for sharing fakes
+      cDelta = -(Math.floor(Math.random() * 8) + 8);    // lose 8-16% credibility
+    } else {
+      fDelta = -(Math.floor(Math.random() * 40) + 30);  // lose 30-70 followers
+      cDelta = -(Math.floor(Math.random() * 4) + 3);    // lose 3-7% credibility
+    }
+  }
+
+  return { fDelta, cDelta };
+};
+
+interface WeightedItem {
+  sc: Scenario;
+  weight: number;
+}
+
+const pickWeightedScenario = (weightedScenarios: WeightedItem[], totalWeight: number, defaultScenario: Scenario): Scenario => {
+  let r = Math.random() * totalWeight;
+  for (const item of weightedScenarios) {
+    r -= item.weight;
+    if (r <= 0) {
+      return item.sc;
+    }
+  }
+  return defaultScenario;
+};
 
 export default function RealityArena() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -135,7 +171,7 @@ export default function RealityArena() {
     if (!trans) return sc;
 
     const localizedGraph = sc.evidenceGraph ? {
-      nodes: sc.evidenceGraph.nodes.map((n: any) => {
+      nodes: sc.evidenceGraph.nodes.map((n: EvidenceNode): EvidenceNode => {
         let label = n.label;
         let description = n.description;
         if (n.id === 'c1') {
@@ -153,7 +189,7 @@ export default function RealityArena() {
       edges: sc.evidenceGraph.edges
     } : undefined;
 
-    const localizedClues = sc.lateralClues ? sc.lateralClues.map((c: any) => {
+    const localizedClues = sc.lateralClues ? sc.lateralClues.map((c: { question: string; options: string[]; correctIndex: number; explanation: string }) => {
       let question = c.question;
       let options = c.options;
       let explanation = c.explanation;
@@ -209,6 +245,59 @@ export default function RealityArena() {
   const [confidenceRating, setConfidenceRating] = useState<number | null>(null);
   const [showConfidencePicker, setShowConfidencePicker] = useState(false);
 
+  const resetState = () => {
+    setSelectedAction(null);
+    setShowExplanation(false);
+    setXpGained(0);
+    setIsCorrect(false);
+    setStatDelta(null);
+    
+    // Reset investigation
+    setInvestigating(false);
+    setUnlockedNodes(['c1']);
+    setSelectedNodeId('c1');
+    setLateralSolved(false);
+    setLateralAnswer(null);
+    setLateralChecked(false);
+    setFinalVerdict(null);
+
+    // Reset tells
+    setShowTells(false);
+    setSelectedTellId(null);
+
+    // Reset confidence
+    setConfidenceRating(null);
+    setShowConfidencePicker(false);
+  };
+
+  const selectAdaptiveScenario = (userSkills: SkillScores, list: Scenario[]) => {
+    if (list.length === 0) return;
+
+    const skillKeyMap: Record<string, keyof SkillScores> = {
+      'Source Verification': 'source_verification',
+      'Bias Detection': 'bias_detection',
+      'Deepfake Awareness': 'deepfake_awareness',
+      'Emotional Manipulation': 'emotional_manipulation',
+      'Statistical Literacy': 'statistical_literacy',
+      'Lateral Reading': 'lateral_reading',
+      'AI Literacy': 'ai_literacy'
+    };
+
+    let totalWeight = 0;
+    const weightedScenarios = list.map(sc => {
+      const skillKey = skillKeyMap[sc.skill];
+      const score = userSkills[skillKey] ?? 50;
+      const weight = Math.max(5, 100 - score);
+      totalWeight += weight;
+      return { sc, weight };
+    });
+
+    const selected = pickWeightedScenario(weightedScenarios, totalWeight, list[0]);
+
+    setCurrentScenario(selected);
+    resetState();
+  };
+
   // Load database and simulation state
   useEffect(() => {
     const init = async () => {
@@ -242,83 +331,8 @@ export default function RealityArena() {
     }
   };
 
-  const selectAdaptiveScenario = (userSkills: SkillScores, list: Scenario[]) => {
-    if (list.length === 0) return;
-
-    const skillKeyMap: Record<string, keyof SkillScores> = {
-      'Source Verification': 'source_verification',
-      'Bias Detection': 'bias_detection',
-      'Deepfake Awareness': 'deepfake_awareness',
-      'Emotional Manipulation': 'emotional_manipulation',
-      'Statistical Literacy': 'statistical_literacy',
-      'Lateral Reading': 'lateral_reading',
-      'AI Literacy': 'ai_literacy'
-    };
-
-    let totalWeight = 0;
-    const weightedScenarios = list.map(sc => {
-      const skillKey = skillKeyMap[sc.skill];
-      const score = userSkills[skillKey] ?? 50;
-      const weight = Math.max(5, 100 - score);
-      totalWeight += weight;
-      return { sc, weight };
-    });
-
-    let r = Math.random() * totalWeight;
-    let selected = list[0];
-    for (const item of weightedScenarios) {
-      r -= item.weight;
-      if (r <= 0) {
-        selected = item.sc;
-        break;
-      }
-    }
-
-    setCurrentScenario(selected);
-    resetState();
-  };
-
-  const resetState = () => {
-    setSelectedAction(null);
-    setShowExplanation(false);
-    setXpGained(0);
-    setIsCorrect(false);
-    setStatDelta(null);
-    
-    // Reset investigation
-    setInvestigating(false);
-    setUnlockedNodes(['c1']);
-    setSelectedNodeId('c1');
-    setLateralSolved(false);
-    setLateralAnswer(null);
-    setLateralChecked(false);
-    setFinalVerdict(null);
-
-    // Reset tells
-    setShowTells(false);
-    setSelectedTellId(null);
-
-    // Reset confidence
-    setConfidenceRating(null);
-    setShowConfidencePicker(false);
-  };
-
   const evaluateStatChanges = (action: string, correct: boolean) => {
-    let fDelta = 0;
-    let cDelta = 0;
-
-    if (correct) {
-      fDelta = Math.floor(Math.random() * 40) + 30; // +30-70 followers
-      cDelta = Math.floor(Math.random() * 4) + 3;    // +3-7% credibility
-    } else {
-      if (action === 'SHARE') {
-        fDelta = -(Math.floor(Math.random() * 80) + 100); // lose 100-180 followers for sharing fakes
-        cDelta = -(Math.floor(Math.random() * 8) + 8);    // lose 8-16% credibility
-      } else {
-        fDelta = -(Math.floor(Math.random() * 40) + 30);  // lose 30-70 followers
-        cDelta = -(Math.floor(Math.random() * 4) + 3);    // lose 3-7% credibility
-      }
-    }
+    const { fDelta, cDelta } = calculateDeltas(action, correct);
 
     const nextFollowers = Math.max(100, followers + fDelta);
     const nextCred = Math.max(10, Math.min(100, credibility + cDelta));
@@ -555,7 +569,7 @@ export default function RealityArena() {
                         ? 'font-serif text-lg font-bold text-white leading-snug' 
                         : 'font-sans text-slate-200'
                   }`}>
-                    "{currentScenario.content}"
+                    &quot;{currentScenario.content}&quot;
                   </p>
 
                   {/* Media attachments */}
@@ -814,7 +828,6 @@ export default function RealityArena() {
                         // We draw simple custom connections mapping index locations
                         let strokeColor = 'rgba(30, 41, 59, 0.4)';
                         let strokeWidth = 1.5;
-                        let glow = '';
 
                         if (isActive) {
                           strokeColor = edge.relationship === 'contradicts' ? '#ef4444' : '#38bdf8';
@@ -822,7 +835,6 @@ export default function RealityArena() {
                         }
 
                         // Approximate relative coordinates for horizontal nodes alignment
-                        const widthStep = 95 / 4;
                         const posMap: Record<string, { x: number; y: number }> = {
                           c1: { x: 10, y: 50 },
                           s1: { x: 30, y: 25 },
@@ -923,7 +935,7 @@ export default function RealityArena() {
                             Research this query in a separate workspace tab. Once solved, all connection nodes will be fully calibrated.
                           </p>
                           <div className="p-3 bg-slate-900/60 border border-purple-950 rounded-xl text-xs font-mono text-purple-200">
-                            🔍 Query: "{currentScenario.lateralSearchQuery}"
+                             🔍 Query: &quot;{currentScenario.lateralSearchQuery}&quot;
                           </div>
                         </div>
                       )}

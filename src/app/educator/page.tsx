@@ -75,18 +75,14 @@ export default function EducatorDashboard() {
   const [exportSuccess, setExportSuccess] = useState(false);
 
   useEffect(() => {
-    React.startTransition(() => {
-      setMounted(true);
-    });
     const loadRealData = async () => {
       try {
         const list = await dbService.getLeaderboard();
-        React.startTransition(() => {
-          setRealLeaderboard(list);
-        });
+        setRealLeaderboard(list);
       } catch (e) {
         console.warn("Failed to load real database entries for dashboard", e);
       }
+      setMounted(true);
     };
     loadRealData();
   }, []);

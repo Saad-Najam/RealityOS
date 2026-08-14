@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Simulated RAG evidence database for common demo inputs
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const DEMO_RESPONSES: Record<string, any> = {
   coffee: {
     verdict: "MISLEADING",
@@ -8,13 +9,13 @@ const DEMO_RESPONSES: Record<string, any> = {
     summary: "The claim that drinking coffee increases lifespan by 10 years is an exaggeration of observational health findings.",
     claims: [
       { text: "Coffee increases human lifespan by 10 years.", status: "CONTRADICTED", why: "No clinical trials or observational studies show a fixed 10-year survival extension." },
-      { text: "A medical study on coffee consumption was published.", status: "SUPPORTED", why: "The New England Journal of Medicine published data tracking correlation between coffee intake and reduced mortality rates." },
+      { text: "A medical study on coffee consumption was published.", status: "SUPPORTED", why: "The New England Journal of Medicine published a study in 2012 tracking a cohort of 402,290 participants showing a 10% to 16% reduced risk of death among coffee drinkers." },
       { text: "Doubling espresso intake guarantees longevity.", status: "CONTRADICTED", why: "Exaggerated dose relationships are not supported; studies observed correlation up to moderate amounts only." }
     ],
     graph: {
       nodes: [
         { id: "c1", label: "Claim: Coffee adds 10 years to lifespan", type: "claim", description: "Sensationalized claims appearing on social platforms." },
-        { id: "s1", label: "Source: NEJM Journal (Tier 3 Academic)", type: "source", description: "Observational study tracing coffee drinking trends." },
+        { id: "s1", label: "Source: NEJM Study 2012 (Tier 1 Academic)", type: "source", description: "Observational study tracing coffee drinking trends." },
         { id: "s2", label: "Source: HealthyLife Blog (Tier 5 Unknown)", type: "source", description: "Headline exaggeration claiming longevity guarantees." },
         { id: "e1", label: "Evidence: Mild correlation observed", type: "evidence", status: "supports", description: "10-15% lower mortality correlation, not 10 absolute years." },
         { id: "e2", label: "Evidence: False causality claims", type: "evidence", status: "contradicts", description: "Post presents correlation as absolute biological cause." }
@@ -94,7 +95,7 @@ const DEMO_RESPONSES: Record<string, any> = {
     summary: "The viral claim that hot lemon water cures all stages of cancer is a dangerous medical myth with no clinical supporting evidence.",
     claims: [
       { text: "Hot water with lemon releases anti-cancer compounds.", status: "CONTRADICTED", why: "Peer-reviewed medical oncology journals show lemon juice has no systemic therapeutic effect on cancer cells." },
-      { text: "The remedy has been verified by research hospitals.", status: "CONTRADICTED", why: "Named research hospitals (e.g. Shaukat Khanum, Mayo Clinic) explicitly deny releasing this circular." }
+      { text: "The remedy has been verified by research hospitals.", status: "CONTRADICTED", why: "Named hospitals explicitly deny releasing this circular." }
     ],
     graph: {
       nodes: [
@@ -120,7 +121,7 @@ const DEMO_RESPONSES: Record<string, any> = {
       nodes: [
         { id: "c1", label: "Claim: Prime Minister Internet Ban Video", type: "claim", description: "Synthetic deepfake clip circulating on TikTok/X." },
         { id: "s1", label: "Source: Telecom Authority (Tier 1)", type: "source", description: "Official statement from PTA." },
-        { id: "e1", label: "Evidence: AI vocal tells verified", type: "evidence", status: "contradicts", description: "Vocal frequency analysis matches known ElevenLabs voice clone patterns." }
+        { id: "e1", label: "Evidence: AI vocal tells verified", type: "evidence", status: "contradicts", description: "Vocal frequency analysis matches known AI voice-synthesis patterns." }
       ],
       edges: [
         { from: "s1", to: "e1", relationship: "details" },

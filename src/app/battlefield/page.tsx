@@ -252,38 +252,7 @@ export default function Battlefield() {
     load();
   }, []);
 
-  // Timer loop
-  useEffect(() => {
-    if (!isPlaying || timeLeft <= 0) {
-      if (timeLeft === 0 && isPlaying) {
-        calculateEcosystemReport();
-      }
-      return;
-    }
-    const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft, isPlaying]);
-
-  const handleStartGame = () => {
-    setIsPlaying(true);
-    setTimeLeft(90);
-    setSortActions({});
-    setActiveCardIdx(0);
-    setShowReport(false);
-  };
-
-  const handleAction = (postId: number, action: 'TRUST' | 'FLAG') => {
-    setSortActions(prev => ({ ...prev, [postId]: action }));
-    if (activeCardIdx < localizedFeed.length - 1) {
-      setTimeout(() => {
-        setActiveCardIdx(activeCardIdx + 1);
-      }, 350);
-    }
-  };
-
-  const calculateEcosystemReport = async () => {
+  async function calculateEcosystemReport() {
     setIsPlaying(false);
 
     let correctTrust = 0;
@@ -369,6 +338,39 @@ export default function Battlefield() {
     }
 
     setShowReport(true);
+  }
+
+  // Timer loop
+  useEffect(() => {
+    if (!isPlaying || timeLeft <= 0) {
+      if (timeLeft === 0 && isPlaying) {
+        setTimeout(() => {
+          calculateEcosystemReport();
+        }, 0);
+      }
+      return;
+    }
+    const timer = setTimeout(() => {
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, isPlaying]);
+
+  const handleStartGame = () => {
+    setIsPlaying(true);
+    setTimeLeft(90);
+    setSortActions({});
+    setActiveCardIdx(0);
+    setShowReport(false);
+  };
+
+  const handleAction = (postId: number, action: 'TRUST' | 'FLAG') => {
+    setSortActions(prev => ({ ...prev, [postId]: action }));
+    if (activeCardIdx < localizedFeed.length - 1) {
+      setTimeout(() => {
+        setActiveCardIdx(activeCardIdx + 1);
+      }, 350);
+    }
   };
 
   const progressPercent = ((Object.keys(sortActions).length) / localizedFeed.length) * 100;
@@ -489,7 +491,7 @@ export default function Battlefield() {
                   </div>
 
                   <p className="text-sm sm:text-base leading-relaxed text-slate-100 font-medium">
-                    "{currentPost.content}"
+                    &quot;{currentPost.content}&quot;
                   </p>
 
                   <div className="flex items-center justify-between text-[10px] text-slate-500 border-t border-white/5 pt-3">
@@ -693,7 +695,7 @@ export default function Battlefield() {
                         </span>
                       </div>
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-3 font-sans font-medium">
-                        "{post.content}"
+                        &quot;{post.content}&quot;
                       </p>
                       <p className="text-xs text-slate-400 leading-relaxed pt-2.5 mt-2.5 border-t border-white/5">
                         <strong className="text-sky-400">{language === 'ur' ? 'تجزیہ:' : 'Analysis:'}</strong> {post.explanation}
