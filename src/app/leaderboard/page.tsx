@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Trophy, ShieldAlert, Award, Star, School, Search, RefreshCw, UserCheck } from 'lucide-react';
+import { Trophy, Award, Star, School, RefreshCw } from 'lucide-react';
 import { dbService, Profile, LeaderboardEntry } from '@/lib/db';
 import Header from '@/components/Header';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function LeaderboardView() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -11,6 +12,7 @@ export default function LeaderboardView() {
   const [activeTab, setActiveTab] = useState<'individual' | 'campus'>('individual');
   const [selectedCampus, setSelectedCampus] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const { language, t } = useLanguage();
 
   const campuses = [
     'FAST Karachi',
@@ -74,21 +76,21 @@ export default function LeaderboardView() {
       <main className="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-10 space-y-8">
         
         {/* Header Title */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-start">
           <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center">
-              <Trophy className="w-8 h-8 mr-2.5 text-amber-500 fill-amber-500/10 drop-shadow-[0_0_12px_rgba(245,158,11,0.3)]" />
-              LEADERBOARD
+            <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-8 h-8 text-amber-500 fill-amber-500/10 drop-shadow-[0_0_12px_rgba(245,158,11,0.3)]" />
+              {t.lead_title}
             </h2>
-            <p className="text-sm text-slate-400">Compete with student investigators nationwide.</p>
+            <p className="text-sm text-slate-400">{t.lead_sub}</p>
           </div>
 
           {/* Campus Selector widget */}
           {profile && (
-            <div className="glass-panel px-4 py-3 rounded-xl border border-sky-950 flex items-center space-x-3 w-full sm:w-auto">
+            <div className="glass-panel px-4 py-3 rounded-xl border border-sky-950 flex items-center space-x-3 w-full sm:w-auto rtl:space-x-reverse">
               <School className="w-5 h-5 text-sky-400" />
-              <div className="flex-grow">
-                <div className="text-[10px] text-slate-500 font-bold uppercase">Affiliated Campus</div>
+              <div className="flex-grow text-start">
+                <div className="text-[10px] text-slate-500 font-bold uppercase">{t.lead_campus_select}</div>
                 <select
                   value={selectedCampus}
                   onChange={handleUpdateCampus}
@@ -109,23 +111,23 @@ export default function LeaderboardView() {
         <div className="flex border-b border-sky-950">
           <button
             onClick={() => setActiveTab('individual')}
-            className={`px-6 py-3 font-bold text-sm tracking-wide border-b-2 transition-all ${
+            className={`px-6 py-3 font-bold text-sm tracking-wide border-b-2 transition-all cursor-pointer ${
               activeTab === 'individual'
                 ? 'border-sky-400 text-sky-400 bg-sky-950/10 shadow-[inset_0_-2px_0_#0ea5e9]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            Individual Sleuths
+            {t.lead_tab_individual}
           </button>
           <button
             onClick={() => setActiveTab('campus')}
-            className={`px-6 py-3 font-bold text-sm tracking-wide border-b-2 transition-all ${
+            className={`px-6 py-3 font-bold text-sm tracking-wide border-b-2 transition-all cursor-pointer ${
               activeTab === 'campus'
                 ? 'border-sky-400 text-sky-400 bg-sky-950/10 shadow-[inset_0_-2px_0_#0ea5e9]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            Campus Standings
+            {t.lead_tab_campus}
           </button>
         </div>
 
@@ -152,7 +154,9 @@ export default function LeaderboardView() {
               {/* Gold (Rank 1) */}
               {topThree[0] && (
                 <div className="glass-panel p-5 rounded-xl border border-amber-500/30 flex flex-col items-center justify-center text-center shadow-[0_0_30px_rgba(245,158,11,0.05)] order-2 relative -translate-y-4">
-                  <div className="absolute -top-3 px-2 py-0.5 bg-amber-500 text-slate-950 text-[9px] font-black rounded-full uppercase tracking-wider">Leader</div>
+                  <div className="absolute -top-3 px-2 py-0.5 bg-amber-500 text-slate-950 text-[9px] font-black rounded-full uppercase tracking-wider">
+                    {language === 'ur' ? 'نمبر ۱' : 'Leader'}
+                  </div>
                   <div className="relative">
                     <div className="w-16 h-16 bg-amber-950/40 rounded-full border-2 border-amber-400 flex items-center justify-center font-black text-amber-400 text-lg shadow-[0_0_15px_rgba(245,158,11,0.2)]">1</div>
                     <Star className="w-6 h-6 text-amber-400 fill-amber-500 absolute -bottom-1 -right-1" />
@@ -179,7 +183,7 @@ export default function LeaderboardView() {
             </div>
 
             {/* List for remainder ranks */}
-            <div className="glass-panel rounded-2xl border border-sky-950/50 divide-y divide-sky-950/40 overflow-hidden">
+            <div className="glass-panel rounded-2xl border border-sky-950/50 divide-y divide-sky-950/40 overflow-hidden text-start">
               {remaining.map((entry, idx) => {
                 const rankNum = idx + 4;
                 const isCurrentUser = profile && entry.username === profile.username;
@@ -190,12 +194,12 @@ export default function LeaderboardView() {
                       isCurrentUser ? 'bg-sky-950/20 border-l-4 border-sky-400' : 'hover:bg-slate-900/10'
                     }`}
                   >
-                    <div className="flex items-center space-x-4 min-w-0">
+                    <div className="flex items-center space-x-4 min-w-0 rtl:space-x-reverse">
                       <span className="text-sm font-bold text-slate-500 w-6 text-center">{rankNum}</span>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-slate-200 flex items-center">
+                        <div className="text-sm font-bold text-slate-200 flex items-center gap-2">
                           {entry.username}
-                          {isCurrentUser && <span className="ml-2 text-[10px] px-1.5 py-0.2 bg-sky-950 border border-sky-900 text-sky-400 rounded">You</span>}
+                          {isCurrentUser && <span className="text-[10px] px-1.5 py-0.2 bg-sky-950 border border-sky-900 text-sky-400 rounded">{language === 'ur' ? 'آپ' : 'You'}</span>}
                         </div>
                         <span className="text-xs text-slate-400 truncate block mt-0.5">{entry.campus}</span>
                       </div>
@@ -209,7 +213,7 @@ export default function LeaderboardView() {
           </div>
         ) : (
           /* Campus Standing listing */
-          <div className="space-y-4">
+          <div className="space-y-4 text-start">
             <div className="glass-panel rounded-2xl border border-sky-950/50 divide-y divide-sky-950/40 overflow-hidden">
               {campusStandings.map((standing, idx) => {
                 const rankNum = idx + 1;
@@ -231,20 +235,20 @@ export default function LeaderboardView() {
                       isUserSchool ? 'bg-sky-950/20 border-l-4 border-sky-400' : 'hover:bg-slate-900/10'
                     }`}
                   >
-                    <div className="flex items-center space-x-4 min-w-0">
+                    <div className="flex items-center space-x-4 min-w-0 rtl:space-x-reverse">
                       <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black border ${rankBadgeColor}`}>
                         {rankNum}
                       </span>
                       <div className="min-w-0">
-                        <div className="text-sm sm:text-base font-bold text-slate-200 flex items-center">
+                        <div className="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
                           {standing.campus}
-                          {isUserSchool && <span className="ml-2.5 text-[9px] px-1.5 py-0.5 bg-sky-950 border border-sky-900 text-sky-400 rounded-full font-bold uppercase tracking-wider">Your Campus</span>}
+                          {isUserSchool && <span className="text-[9px] px-1.5 py-0.5 bg-sky-950 border border-sky-900 text-sky-400 rounded-full font-bold uppercase tracking-wider">{language === 'ur' ? 'آپ کا کیمپس' : 'Your Campus'}</span>}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <span className="text-sm font-black text-sky-400 block">{standing.score} XP</span>
-                      <span className="text-[10px] text-slate-500 font-semibold uppercase">Cumulative</span>
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase">{t.lead_cumulative}</span>
                     </div>
                   </div>
                 );

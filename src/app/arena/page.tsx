@@ -11,11 +11,175 @@ import { dbService, Profile, SkillScores, getUserRank } from '@/lib/db';
 import { Scenario } from '@/lib/scenariosData';
 import Header from '@/components/Header';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 export default function RealityArena() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<SkillScores | null>(null);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [currentScenario, setCurrentScenario] = useState<Scenario | null>(null);
+  const [rawScenario, setCurrentScenario] = useState<Scenario | null>(null);
+  const { language, t } = useLanguage();
+
+  const getLocalizedScenario = (sc: Scenario): Scenario => {
+    if (language !== 'ur') return sc;
+
+    const scenarioTranslations: Record<number, Partial<Scenario>> = {
+      1: {
+        title: "عام تعطیل کا ہنگامی نوٹس",
+        content: "📢 ہنگامی اطلاع: کل یونیورسٹی میں عام تعطیل کا اعلان کیا گیا ہے اور تمام امتحانات ملتوی کر دیے گئے ہیں۔ پرنسپل کے نوٹس کا انتظار کریں۔",
+        learningObjective: "سرکاری ویب سائٹوں کے ذریعے ہنگامی تعطیلات کی تصدیق کرنا سیکھیں۔",
+        manipulationType: "جلدی بازی اور غیر تصدیق شدہ افواہ",
+        explanation: "یہ فیملی گروپ میں واٹس ایپ پر ایک فارورڈ پیغام تھا جس کا کوئی سرکاری لنک نہیں تھا۔ ایسے پیغامات پر بھروسہ کرنے سے پہلے ہمیشہ یونیورسٹی کے آفیشل پورٹل پر جا کر تصدیق کریں۔",
+      },
+      2: {
+        title: "تصویر میں عالمی رہنما کی جیکٹ",
+        content: "عالمی رہنما نے فیشن شو کے دوران سستی چمڑے کی جیکٹ پہن رکھی ہے، جو وائرل ہو گئی ہے۔ تصویر بالکل سچی لگتی ہے۔",
+        learningObjective: "مصنوعی ذہانت (AI) سے بنی تصاویر میں جسمانی خامیوں کو پکڑنا سیکھیں۔",
+        manipulationType: "ڈیپ فیک / اے آئی تصویر",
+        explanation: "غور سے دیکھنے پر پس منظر کی سیدھی لائنیں اور رہنما کے ہاتھوں کی انگلیاں غیر متوازن نظر آتی ہیں، جو کہ اے آئی تصویر کی واضح نشانی ہیں۔",
+      },
+      3: {
+        title: "کافی اور عمر کا دعویٰ",
+        content: "نئی تحقیق کے مطابق اعتدال پسند کافی پینے والے اپنی عمر میں 10 سال کا اضافہ کرتے ہیں! کافی کا استعمال بڑھائیں۔",
+        learningObjective: "اعداد و شمار کی مبالغہ آرائی کو پہچانیں۔",
+        manipulationType: "ریاضیاتی مبالغہ آرائی",
+        explanation: "تحقیق صرف کافی پینے اور لمبی عمر کے درمیان ایک باہمی تعلق دکھاتی ہے، یہ سائنسی طور پر ثابت نہیں کرتی کہ کافی ہی عمر بڑھانے کا سبب ہے۔",
+      },
+      4: {
+        title: "انتخابات کا لیک آڈیو کلپ",
+        content: "انتخابات میں امیدوار کا اعترافی آڈیو کلپ لیک ہو گیا ہے۔",
+        learningObjective: "آواز کے کلونز اور ڈیپ فیکس کو پکڑنا سیکھیں۔",
+        manipulationType: "اے آئی آڈیو کلون",
+        explanation: "اے آئی آواز کے کلونز آسانی سے بنائے جا سکتے ہیں۔ مستند بیانات کے بغیر ایسی آڈیو پر یقین نہ کریں۔",
+      },
+      5: {
+        title: "ہنگامی بینک بندی کی افواہ",
+        content: "🚨 بینک بند ہونے والے ہیں! اپنا کیش فوراً نکال لیں ورنہ پچھتائیں گے!",
+        learningObjective: "خوف پر مبنی سنسنی خیز خبروں سے بچیں۔",
+        manipulationType: "سنسنی خیز خوف کی اپیل",
+        explanation: "یہ خوف پھیلا کر معاشی انتشار پیدا کرنے کی کوشش ہے۔ ہمیشہ بینک کے سرکاری نمائندوں سے رجوع کریں۔",
+      },
+      6: {
+        title: "خالی سپر مارکیٹ الماریاں",
+        content: "خالی الماریوں کی تصویر کے ساتھ معاشی تباہی کا دعویٰ۔",
+        learningObjective: "پرانی تصاویر کے غلط سیاق و سباق کو پہچانیں۔",
+        manipulationType: "غلط سیاق و سباق کی تصویر",
+        explanation: "ریورس امیج سرچ سے معلوم ہوتا ہے کہ یہ تصویر کئی سال پرانی کسی دوسری جگہ کی ہے۔",
+      },
+      7: {
+        title: "ٹیکس پالیسی پر جانبدار مضمون",
+        content: "ٹیکس پالیسی کو 'ڈکیتی' قرار دینے والا یک طرفہ مضمون۔",
+        learningObjective: "یک طرفہ بیانات اور جانب داریت کو پہچانیں۔",
+        manipulationType: "شدید جانب داریت",
+        explanation: "مضمون صرف ایک اپوزیشن لیڈر کا موقف پیش کرتا ہے اور سنسنی خیز الفاظ کا استعمال کرتا ہے۔",
+      },
+      8: {
+        title: "ورچوئل کانفرنس کا دعوت نامہ",
+        content: "تعلیمی پورٹل کی ای میل پر ورچوئل کانفرنس کا دعوت نامہ۔",
+        learningObjective: "سرکاری تعلیمی دعوت ناموں کی تصدیق کریں۔",
+        manipulationType: "تصدیق شدہ آفیشل ای میل",
+        explanation: "یہ ایک باضابطہ اور سچا دعوت نامہ ہے جو یونیورسٹی کے تصدیق شدہ ایڈریس سے بھیجا گیا ہے۔",
+      },
+      9: {
+        title: "مفت لیپ ٹاپ اسکیم کی افواہ",
+        content: "حکومت کی طرف سے تمام طلبہ کیلئے بالکل مفت لیپ ٹاپ! ابھی اس لنک پر رجسٹر کریں۔",
+        learningObjective: "فشنگ اور ڈیٹا چوری کے گھوٹالوں سے بچیں۔",
+        manipulationType: "ڈیٹا چوری کا جھوٹا جھانسا",
+        explanation: "یہ ڈیٹا چوری کرنے کا فشنگ لنک ہے جو واٹس ایپ پر پھیلایا جا رہا ہے۔ حکومت کی ایسی تمام اسکیمیں آفیشل پورٹل پر ہوتی ہیں۔",
+      },
+      10: {
+        title: "سرکاری پورٹل کی آخری تاریخ",
+        content: "فیس جمع کروانے کی تاریخ میں توسیع کا نوٹس۔",
+        learningObjective: "آفیشل پورٹل پر تاریخوں کی تصدیق کریں۔",
+        manipulationType: "آفیشل توثیق",
+        explanation: "یہ یونیورسٹی کے فیس سیکشن پر چڑھا ہوا ایک باضابطہ نوٹیفیکیشن ہے، اسے سچا سمجھنا چاہیے۔",
+      },
+      11: {
+        title: "جعلی بین الاقوامی اسکالرشپ",
+        content: "🎓 شاندار موقع! گلوبل یوتھ لیڈر اسکالرشپ 2026 میں اپلائی کریں۔ صرف 72 گھنٹے باقی ہیں!",
+        learningObjective: "جھوٹی جلدی بازی اور فرضی اسکالرشپ کی شناخت کریں۔",
+        manipulationType: "جھوٹی کمیابی + مبالغہ آرائی",
+        explanation: "معتبر ادارے کبھی بھی واٹس ایپ پر ایسی ہنگامی اسکالرشپ فارورڈ نہیں کرتے۔ اس کا کوئی باضابطہ لنک نہیں ہے۔",
+      },
+      12: {
+        title: "موبائل فون اور ذہنی صحت",
+        content: "📊 نئی تحقیق: 90 فیصد طلبہ کے موبائل فون نے ان کی ذہنی صحت کو مستقل تباہ کر دیا ہے!",
+        learningObjective: "غلط اعداد و شمار کے تعصب کو پہچانیں۔",
+        manipulationType: "مبالغہ آمیز اعداد و شمار",
+        explanation: "تحقیق صرف معمولی اثرات کا ذکر کرتی ہے، 'مستقل تباہی' کا دعویٰ بالکل من گھڑت اور مبالغہ آرائی ہے۔",
+      },
+      13: {
+        title: "لاہور میں سیلاب کا دعویٰ",
+        content: "ابھی کی خبر: لاہور کے وسط میں سیلاب کا پانی داخل ہو گیا! شہری فوراً نکل جائیں! تصویر دیکھیں۔",
+        learningObjective: "زلزلہ یا سیلاب کے دوران پرانی تصاویر کی تصدیق کریں۔",
+        manipulationType: "پرانا میڈیا پیش کرنا",
+        explanation: "ریورس سرچ سے ثابت ہوتا ہے کہ یہ تصویر 2010 کے سیلاب کی ہے، امروز کی نہیں۔",
+      },
+      14: {
+        title: "گنے کا رس اور ڈیری کی افواہ",
+        content: "⚠️ اہم طبی انتباہ: گنے کا رس دودھ یا دہی کے ساتھ پینے سے جگر فیل ہو جاتا ہے! فوراً شیئر کریں۔",
+        learningObjective: "طبی افواہوں اور جعلی ڈاکٹروں سے بچیں۔",
+        manipulationType: "جعلی طبی افواہ",
+        explanation: "طبی طور پر اس کا کوئی ثبوت نہیں ہے۔ یہ ایک عام واٹس ایپ افواہ ہے جو خوف پھیلانے کیلئے شیئر کی جاتی ہے۔",
+      },
+      15: {
+        title: "نیند اور الزائمر کی سرخی",
+        content: "حیرت انگیز انکشاف: سائنسدانوں کا دعویٰ کہ 4 گھنٹے سے کم سونے والوں میں الزائمر کا خطرہ 340 فیصد بڑھ جاتا ہے!",
+        learningObjective: "تحقیقی سرخیوں میں مبالغہ آرائی کو پکڑیں۔",
+        manipulationType: "ریاضیاتی مبالغہ آرائی",
+        explanation: "یہ موازنہ ریسرچ پیپر کے نتائج کا سنسنی خیز ترجمہ ہے۔ اصل خطرہ اس قدر زیادہ نہیں ہوتا۔",
+      }
+    };
+
+    const trans = scenarioTranslations[sc.id];
+    if (!trans) return sc;
+
+    const localizedGraph = sc.evidenceGraph ? {
+      nodes: sc.evidenceGraph.nodes.map((n: any) => {
+        let label = n.label;
+        let description = n.description;
+        if (n.id === 'c1') {
+          label = language === 'ur' ? 'مرکزی دعویٰ' : n.label;
+          description = trans.title || n.description;
+        } else if (n.id === 's1') {
+          label = language === 'ur' ? 'خبر کا ذریعہ' : n.label;
+        } else if (n.id === 'e1') {
+          label = language === 'ur' ? 'شواہد کی جانچ' : n.label;
+        } else if (n.id === 'v1') {
+          label = language === 'ur' ? 'حتمی فیصلہ' : n.label;
+        }
+        return { ...n, label, description };
+      }),
+      edges: sc.evidenceGraph.edges
+    } : undefined;
+
+    const localizedClues = sc.lateralClues ? sc.lateralClues.map((c: any) => {
+      let question = c.question;
+      let options = c.options;
+      let explanation = c.explanation;
+      if (sc.id === 15) {
+        question = language === 'ur' ? 'اصل تحقیق کے نتائج کیا تھے؟' : c.question;
+        options = language === 'ur' 
+          ? ["نیند کی کمی الزائمر کا شکار بنا دیتی ہے", "نیند کی کمی اور الزائمر کے خطرے میں تعلق ہے لیکن یہ تعلق بہت معمولی ہے", "کم سونے والے سب ہی بیمار ہو جاتے ہیں"]
+          : c.options;
+        explanation = language === 'ur' ? 'سائنسی بیانات اکثر مبالغہ آمیز بنا کر پیش کیے جاتے ہیں۔' : c.explanation;
+      }
+      return { ...c, question, options, explanation };
+    }) : undefined;
+
+    return {
+      ...sc,
+      title: trans.title || sc.title,
+      content: trans.content || sc.content,
+      learningObjective: trans.learningObjective || sc.learningObjective,
+      manipulationType: trans.manipulationType || sc.manipulationType,
+      explanation: trans.explanation || sc.explanation,
+      evidenceGraph: localizedGraph,
+      lateralClues: localizedClues
+    };
+  };
+
+  const currentScenario = rawScenario ? getLocalizedScenario(rawScenario) : null;
   
   // Game simulation stats (persisted locally)
   const [followers, setFollowers] = useState(1200);
@@ -40,6 +204,10 @@ export default function RealityArena() {
   // Visual tells overlay states
   const [showTells, setShowTells] = useState(false);
   const [selectedTellId, setSelectedTellId] = useState<string | null>(null);
+
+  // Confidence calibration
+  const [confidenceRating, setConfidenceRating] = useState<number | null>(null);
+  const [showConfidencePicker, setShowConfidencePicker] = useState(false);
 
   // Load database and simulation state
   useEffect(() => {
@@ -129,6 +297,10 @@ export default function RealityArena() {
     // Reset tells
     setShowTells(false);
     setSelectedTellId(null);
+
+    // Reset confidence
+    setConfidenceRating(null);
+    setShowConfidencePicker(false);
   };
 
   const evaluateStatChanges = (action: string, correct: boolean) => {
@@ -173,6 +345,7 @@ export default function RealityArena() {
     setProfile(updatedProfile);
     setSkills(updatedSkills);
     setShowExplanation(true);
+    setShowConfidencePicker(false);
   };
 
   const handleOpenInvestigate = () => {
@@ -268,7 +441,9 @@ export default function RealityArena() {
           
           <div className="glass-panel p-4 rounded-xl border border-sky-950/60 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Follower Reach</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                {language === 'ur' ? 'سامعین تک رسائی' : 'Follower Reach'}
+              </span>
               <div className="text-xl sm:text-2xl font-black text-white">{followers.toLocaleString()}</div>
             </div>
             {statDelta && (
@@ -282,7 +457,9 @@ export default function RealityArena() {
 
           <div className="glass-panel p-4 rounded-xl border border-sky-950/60 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Credibility Score</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                {language === 'ur' ? 'ساکھ کی شرح' : 'Credibility Score'}
+              </span>
               <div className="text-xl sm:text-2xl font-black text-white">{credibility}%</div>
             </div>
             <div className="flex items-center space-x-2">
@@ -298,11 +475,13 @@ export default function RealityArena() {
 
           {/* Quick HUD values */}
           <div className="glass-panel p-4 rounded-xl border border-sky-950/60 flex flex-col justify-between">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Level & Rank</span>
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+              {language === 'ur' ? 'لیول اور رینک' : 'Level & Rank'}
+            </span>
             <div className="text-sm font-black text-sky-400 flex items-center justify-between mt-1">
-              <span>Lvl {profile?.level || 1}</span>
+              <span>{t.lvl} {profile?.level || 1}</span>
               <span className="text-[10px] bg-sky-950 px-2 py-0.5 border border-sky-900 rounded text-slate-400 uppercase font-semibold">
-                {profile ? getUserRank(profile.xp) : 'Novice Investigator'}
+                {profile ? (language === 'ur' ? 'تفتیش کار درجہ' : getUserRank(profile.xp)) : 'Novice Investigator'}
               </span>
             </div>
           </div>
@@ -310,13 +489,17 @@ export default function RealityArena() {
           {/* Restart simulation progress */}
           <div className="glass-panel p-4 rounded-xl border border-sky-950/60 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Game Session</span>
-              <span className="text-xs font-bold text-slate-400 mt-1 block">Active Calibration</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                {language === 'ur' ? 'تربیتی سیشن' : 'Game Session'}
+              </span>
+              <span className="text-xs font-bold text-slate-400 mt-1 block">
+                {language === 'ur' ? 'سرگرم جانچ' : 'Active Calibration'}
+              </span>
             </div>
             <button
               onClick={resetGameEngine}
-              className="p-2 bg-slate-900/60 hover:bg-slate-950 border border-sky-950 hover:border-sky-500/40 text-slate-400 hover:text-white rounded-lg transition-all"
-              title="Reset Stats & Session"
+              className="p-2 bg-slate-900/60 hover:bg-slate-950 border border-sky-950 hover:border-sky-500/40 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
+              title={language === 'ur' ? 'دوبارہ ترتیب دیں' : 'Reset Stats & Session'}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -433,9 +616,37 @@ export default function RealityArena() {
                   </button>
                 )}
 
-                {/* Actions Panel */}
+                {/* Confidence picker — shown before actions are taken */}
                 {!investigating && !selectedAction && (
                   <div className="space-y-3 pt-3 border-t border-white/5">
+                    
+                    {/* Confidence rating */}
+                    <div className="p-3 bg-slate-950/60 border border-sky-950/60 rounded-xl space-y-2">
+                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">How confident are you in your judgment?</div>
+                      <div className="flex items-center gap-2">
+                        {[1,2,3,4,5].map(n => (
+                          <button
+                            key={n}
+                            onClick={() => setConfidenceRating(n)}
+                            className={`flex-1 py-2 rounded-lg text-xs font-black border transition-all cursor-pointer ${
+                              confidenceRating === n
+                                ? 'bg-amber-500/20 border-amber-500 text-amber-400'
+                                : 'bg-slate-900/30 border-slate-800 text-slate-500 hover:border-amber-700 hover:text-amber-400'
+                            }`}
+                          >
+                            {n === 1 ? '😰' : n === 2 ? '😟' : n === 3 ? '🤔' : n === 4 ? '😌' : '💪'}
+                          </button>
+                        ))}
+                      </div>
+                      {confidenceRating && (
+                        <div className="text-[10px] text-amber-400/80 font-medium">
+                          {confidenceRating <= 2 ? 'Low confidence — investigate before deciding' :
+                           confidenceRating === 3 ? 'Moderate confidence — proceed with caution' :
+                           'High confidence — make sure you have evidence'}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-3 gap-3">
                       <button
                         onClick={() => handleAction('TRUST')}
@@ -505,6 +716,50 @@ export default function RealityArena() {
                   <p className="text-xs sm:text-sm leading-relaxed opacity-90 font-medium">
                     {currentScenario.explanation}
                   </p>
+
+                  {/* Confidence calibration feedback */}
+                  {confidenceRating !== null && (
+                    <div className={`p-3 rounded-xl border text-xs space-y-1 ${
+                      isCorrect && confidenceRating >= 4
+                        ? 'bg-emerald-950/20 border-emerald-900/40 text-emerald-300'
+                        : !isCorrect && confidenceRating >= 4
+                        ? 'bg-rose-950/20 border-rose-900/40 text-rose-300'
+                        : isCorrect && confidenceRating <= 2
+                        ? 'bg-amber-950/20 border-amber-900/40 text-amber-300'
+                        : 'bg-slate-950/40 border-slate-800 text-slate-400'
+                    }`}>
+                      <div className="font-bold uppercase tracking-wider text-[10px]">Confidence Calibration</div>
+                      <div>
+                        {isCorrect && confidenceRating >= 4 && '✅ Well-calibrated! High confidence matched a correct answer.'}
+                        {isCorrect && confidenceRating <= 2 && '⚠️ Underconfident — you were right but didn\'t trust your instincts.'}
+                        {!isCorrect && confidenceRating >= 4 && '🔴 Overconfidence bias — you were highly confident but wrong. This is a key vulnerability.'}
+                        {!isCorrect && confidenceRating <= 2 && '📚 Low confidence on a wrong answer. Study this scenario type more.'}
+                        {confidenceRating === 3 && (isCorrect ? '✅ Correct with moderate confidence — keep building certainty.' : '📚 Moderate confidence, wrong answer — review the evidence carefully.')}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Why Did I Get Fooled? */}
+                  {!isCorrect && currentScenario.biasesTriggered && currentScenario.biasesTriggered.length > 0 && (
+                    <div className="p-4 bg-amber-950/15 border border-amber-900/30 rounded-xl space-y-3">
+                      <div className="text-xs font-extrabold text-amber-400 uppercase tracking-wider flex items-center">
+                        <span className="mr-2">🧠</span> Why Did You Get Fooled?
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Your decision was influenced by these cognitive biases:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {currentScenario.biasesTriggered.map((bias: string, i: number) => (
+                          <span key={i} className="px-2.5 py-1 bg-amber-950/30 border border-amber-900/50 text-amber-300 text-[10px] font-bold rounded-full">
+                            ⚠️ {bias}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-xs text-slate-500 italic leading-relaxed">
+                        Recognizing these patterns is the first step to overcoming them. Your next challenge will focus on this skill.
+                      </p>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleNextScenario}

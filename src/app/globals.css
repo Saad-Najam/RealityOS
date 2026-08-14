@@ -98,3 +98,27 @@ body {
   animation: matrix 15s linear infinite;
 }
 
+/* Diagnostic scan animation */
+@keyframes scan {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(100vh); }
+  100% { transform: translateY(0); }
+}
+
+/* Loading progress shimmer animation */
+@keyframes loading {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(250%); }
+}
+
+/* Shimmer animation for skeleton states */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(56,189,248,0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}

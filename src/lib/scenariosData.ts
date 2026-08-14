@@ -43,6 +43,7 @@ export interface Scenario {
     nodes: EvidenceNode[];
     edges: EvidenceEdge[];
   };
+  biasesTriggered?: string[];
   lateralSearchQuery?: string;
   lateralClues?: {
     question: string;
@@ -416,5 +417,156 @@ export const INITIAL_SCENARIOS: Scenario[] = [
         { from: "e1", to: "v1", relationship: "resolves" }
       ]
     }
+  },
+  {
+    id: 11,
+    title: "The Fake International Scholarship",
+    category: "source_literacy",
+    difficulty: "medium",
+    format: "WHATSAPP_FORWARD",
+    sender: "University Group Chat",
+    content: "🎓 AMAZING OPPORTUNITY! Apply now for the Global Youth Leader Scholarship 2026! Full funding, €25,000 stipend, flight covered! Only 72 hours left to apply via the link. Forwarded from: Scholarship Pakistan Group.",
+    correctAction: "IGNORE",
+    groundTruthVerdict: "FABRICATED",
+    learningObjective: "Recognize fake scholarship scams using urgency, vague sponsor names, and no verifiable official source.",
+    manipulationType: "Scarcity + Authority Bias",
+    explanation: "Legitimate scholarships from recognized institutions do not circulate exclusively via WhatsApp forwards with 72-hour windows. There is no verifiable sponsoring body, no official application portal URL, and the financial figures are inconsistent with any known 2026 scholarship programs.",
+    skill: "Source Verification",
+    xp: 150,
+    biasesTriggered: ["Scarcity Bias", "Authority Bias", "FOMO (Fear of Missing Out)"],
+    evidenceGraph: {
+      nodes: [
+        { id: "c1", label: "Claim: Real scholarship opportunity", type: "claim", description: "WhatsApp chain message claiming full scholarship." },
+        { id: "s1", label: "Source: 'Scholarship Pakistan Group'", type: "source", description: "Anonymous forwarding chain — no verifiable institution." },
+        { id: "e1", label: "Evidence: No official portal found", type: "evidence", status: "contradicts", description: "Searching 'Global Youth Leader Scholarship 2026' returns no official program page from any government or foundation." }
+      ],
+      edges: [
+        { from: "s1", to: "c1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  {
+    id: 12,
+    title: "The Misleading 90% Statistic",
+    category: "misinformation",
+    difficulty: "medium",
+    format: "INSTAGRAM_CARD",
+    sender: "EduFacts_Daily",
+    content: "📊 NEW STUDY: 90% of students say their mental health has been permanently destroyed by smartphones! Put down your phone and read a book! Share to spread awareness. Source: 'Student Mental Health Institute 2024'",
+    correctAction: "IGNORE",
+    groundTruthVerdict: "MISLEADING",
+    learningObjective: "Identify missing statistical context: sample size, methodology, exact question wording, and cherry-picked framing.",
+    manipulationType: "Cherry-Picking + Misleading Statistics",
+    explanation: "The statistic distorts a real survey. The original study asked 'Do you sometimes feel your screen time affects your mood?' — not whether phones 'permanently destroy' mental health. The 90% figure is accurate but the conclusion and framing are a dramatic exaggeration with no causal evidence.",
+    skill: "Statistical Literacy",
+    xp: 150,
+    biasesTriggered: ["Availability Bias", "Emotional Appeal"],
+    evidenceGraph: {
+      nodes: [
+        { id: "c1", label: "Claim: 90% mental health destroyed", type: "claim", description: "Viral infographic making extreme causal claims." },
+        { id: "s1", label: "Source: Student Mental Health Inst.", type: "source", description: "Real organization — but the post misquotes their findings." },
+        { id: "e1", label: "Evidence: Original survey methodology", type: "evidence", status: "contradicts", description: "The question asked about mood effects, not permanent damage. The '90%' is technically accurate but grossly misrepresented." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  {
+    id: 13,
+    title: "The Old Photo Presented as Current",
+    category: "context",
+    difficulty: "medium",
+    format: "X_POST",
+    sender: "@BreakingAlerts_PK",
+    content: "JUST IN: Massive flood waters have reached the center of Lahore today! Citizens should evacuate immediately! Photo from the scene right now. RT urgently!",
+    correctAction: "IGNORE",
+    groundTruthVerdict: "MISLEADING",
+    learningObjective: "Use reverse image search to verify that a photo is current and from the claimed location.",
+    manipulationType: "False Temporal Context (Old Media)",
+    explanation: "A reverse image search reveals this photo was taken during the 2010 Pakistan floods, not today. The image is real but presented with completely false temporal and geographic context. This is a common manipulation technique during disaster events to amplify panic.",
+    skill: "Lateral Reading",
+    xp: 175,
+    biasesTriggered: ["Availability Bias", "Urgency Bias", "Emotional Outrage"],
+    evidenceGraph: {
+      nodes: [
+        { id: "c1", label: "Claim: Current Lahore flooding today", type: "claim", description: "Account claiming photo is from today's flood emergency." },
+        { id: "s1", label: "Reverse Image Search Result", type: "source", description: "Google Lens reverse search of uploaded image." },
+        { id: "e1", label: "Evidence: Image from 2010 floods", type: "evidence", status: "contradicts", description: "Multiple news archives from 2010 contain identical image tagged in Sindh, not Lahore 2026." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  {
+    id: 14,
+    title: "Viral WhatsApp Sugar Warning",
+    category: "misinformation",
+    difficulty: "easy",
+    format: "WHATSAPP_FORWARD",
+    sender: "Family Group",
+    content: "⚠️ VERY IMPORTANT HEALTH WARNING ⚠️ Doctors at Aga Khan Hospital have discovered that combining sugarcane juice with any dairy product causes fatal liver failure within hours. Please share with all your contacts immediately. Forwarded from Dr. Waqas Khawaja.",
+    correctAction: "IGNORE",
+    groundTruthVerdict: "FABRICATED",
+    learningObjective: "Recognize fabricated health warnings that use false authority, urgency, and unverifiable expert attribution.",
+    manipulationType: "Authority Spoofing + Health Fear Appeal",
+    explanation: "Aga Khan Hospital has issued no such advisory. 'Dr. Waqas Khawaja' is not a registered health official at the hospital. The medical claim is nutritionally baseless — no peer-reviewed research supports a fatal interaction between sugarcane juice and dairy. This is a common viral health scare format.",
+    skill: "Source Verification",
+    xp: 100,
+    biasesTriggered: ["Authority Bias", "Fear Appeal", "Social Proof"],
+    evidenceGraph: {
+      nodes: [
+        { id: "c1", label: "Claim: Juice+dairy causes liver failure", type: "claim", description: "Health scare chain message." },
+        { id: "s1", label: "Source: Aga Khan Hospital (Spoofed)", type: "source", description: "Name-dropped without verification." },
+        { id: "e1", label: "AKH confirms no such advisory", type: "evidence", status: "contradicts", description: "Aga Khan Hospital media office confirmed no such statement was ever issued." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    }
+  },
+  {
+    id: 15,
+    title: "The Clickbait Science Headline",
+    category: "misinformation",
+    difficulty: "hard",
+    format: "NEWS_HEADLINE",
+    sender: "ScienceToday.net",
+    content: "BREAKTHROUGH: Scientists FINALLY Confirm That Sleeping Less Than 4 Hours Makes You 340% More Likely To Get Dementia — Experts Say This Changes Everything About Modern Sleep",
+    correctAction: "INVESTIGATE",
+    groundTruthVerdict: "MISLEADING",
+    learningObjective: "Distinguish between exaggerated science headlines and actual research findings by checking sample size, relative vs absolute risk, and original study source.",
+    manipulationType: "Statistical Exaggeration + Clickbait Headline",
+    explanation: "A real University College London study (2021, n=7,959) found associations between sleep deprivation and cognitive decline. However, the '340% more likely' figure is a relative risk misrepresentation. The absolute risk increase is far smaller. The word 'FINALLY' implies false scientific consensus, and 'changes everything' is editorial hyperbole not found in the original paper.",
+    skill: "Statistical Literacy",
+    xp: 200,
+    biasesTriggered: ["Authority Bias", "Confirmation Bias"],
+    evidenceGraph: {
+      nodes: [
+        { id: "c1", label: "Claim: 4hr sleep = 340% dementia risk", type: "claim", description: "Sensationalized health headline." },
+        { id: "s1", label: "Source: UCL Research (Tier 1 Academic)", type: "source", description: "Actual peer-reviewed longitudinal study." },
+        { id: "e1", label: "Evidence: Relative vs Absolute Risk", type: "evidence", status: "contradicts", description: "The actual absolute risk increase was far more modest. Relative risk figures inflate the perceived danger significantly." }
+      ],
+      edges: [
+        { from: "s1", to: "e1", relationship: "details" },
+        { from: "e1", to: "c1", relationship: "contradicts" }
+      ]
+    },
+    lateralSearchQuery: "UCL sleep deprivation dementia study 2021 original findings",
+    lateralClues: [{
+      question: "What did the original UCL study actually conclude about sleep and dementia?",
+      options: [
+        "Sleeping under 4 hours definitely causes dementia with 340% certainty",
+        "There is a statistical association between chronic sleep deprivation and cognitive decline, but causation was not established and absolute risk differences are small",
+        "The study proved that all adults need exactly 8 hours of sleep or they will develop dementia"
+      ],
+      correctIndex: 1,
+      explanation: "Scientific studies often show correlations, not causations. Relative risk figures are routinely misrepresented in popular media to create alarming headlines."
+    }]
   }
 ];

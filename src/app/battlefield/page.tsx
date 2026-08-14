@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ShieldAlert, ShieldCheck, Search, Clock, Shield, 
+  ShieldAlert, ShieldCheck, Clock, Shield, 
   HelpCircle, Eye, AlertTriangle, RefreshCw, Terminal, 
   UserX, Heart, Share2, Flame, Trophy, Play, CheckCircle2, XCircle
 } from 'lucide-react';
 import { dbService, Profile, SkillScores } from '@/lib/db';
 import Header from '@/components/Header';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface BattlefieldPost {
   id: number;
@@ -27,104 +28,14 @@ interface BattlefieldPost {
   explanation: string;
 }
 
-const BATTLEFIELD_FEED: BattlefieldPost[] = [
-  {
-    id: 1,
-    author: "GeoNet Pakistan",
-    handle: "@GeoNet_PK",
-    avatar: "G",
-    role: "journalist",
-    roleLabel: "Verified News Agency (Tier 2)",
-    content: "🚨 SEISMIC UPDATE: A 6.1 magnitude earthquake has hit 25km north-east of the metropolitan area. Civil defence teams are assessing damage. Stay indoors and monitor official portals. Do not panic.",
-    likes: 4500,
-    shares: 1200,
-    isFake: false,
-    biasesTriggered: [],
-    explanation: "This is a reliable report from an established news agency with specific scientific coordinates and a calm, advisory tone."
-  },
-  {
-    id: 2,
-    author: "Pakistan Crisis Watch",
-    handle: "@CrisisWatch_PK",
-    avatar: "🤖",
-    role: "bot",
-    roleLabel: "Coordinated Bot Account (Tier 6)",
-    content: "🔥 URGENT: The nuclear cooling grid in the northern industrial sector has CRACKED due to the tremor! Toxic radiation leak imminent! FLEE SOUTH IMMEDIATELY! Big pharma and authorities are hiding this! ☢️🚨",
-    likes: 8900,
-    shares: 4800,
-    isFake: true,
-    manipulationType: "Urgency Appeal & Conspiracy",
-    biasesTriggered: ["Urgency Bias", "Conspiracy Deflection"],
-    explanation: "This post uses high-intensity alarms, capitalization, and conspiracy framing. There is no radiation leak, and sharing this causes artificial mass panic."
-  },
-  {
-    id: 3,
-    author: "Zoya Khan Vlogs",
-    handle: "@Zoya_K_Fashion",
-    avatar: "Z",
-    role: "influencer",
-    roleLabel: "Social Influencer (Tier 6)",
-    content: "OMG! Clifton high-rise apartments just completely collapsed! Look at this clip a follower sent me. Absolute horror! Retweet to warn everyone! 😱💔 #earthquake #karachi",
-    likes: 12000,
-    shares: 6200,
-    isFake: true,
-    manipulationType: "False Context (Out-of-date media)",
-    biasesTriggered: ["Bandwagon Effect", "Emotional Outrage"],
-    explanation: "The video Zoya shared is real, but it is from a building demolition in another country back in 2019. Sharing it during a crisis spreads dangerous spatial panic."
-  },
-  {
-    id: 4,
-    author: "Emergency Supplies Corp",
-    handle: "@EmergSupplies_PK",
-    avatar: "📦",
-    role: "advertiser",
-    roleLabel: "Commercial Advertiser (Tier 5)",
-    content: "Earthquakes strike without warning! Protect your loved ones. Get our Tactical Disaster Preparedness Kit with 120h rations at 50% discount for the next 2 hours only! Link in bio. 🛡️⚡",
-    likes: 210,
-    shares: 45,
-    isFake: false, // It is spam but not fake news
-    biasesTriggered: ["Scarcity Framing"],
-    explanation: "This is commercial spam taking advantage of public fear during a crisis to drive sales."
-  },
-  {
-    id: 5,
-    author: "Hamza Siddiqui",
-    handle: "@HamzaS_FAST",
-    avatar: "H",
-    role: "citizen",
-    roleLabel: "Ordinary Resident (Tier 6)",
-    content: "Ground shook solid for 15 seconds here in Gulshan Block 4. Fan was swaying, bookshelf fell. Everyone is out in the streets. No structural damage visible on our block though.",
-    likes: 85,
-    shares: 12,
-    isFake: false,
-    biasesTriggered: [],
-    explanation: "This is an authentic personal citizen report describing immediate physical surroundings without exaggerations."
-  },
-  {
-    id: 6,
-    author: "Chief Commissioner Security",
-    handle: "@ChiefComm_Sec_PK",
-    avatar: "🏛️",
-    role: "spoofed_official",
-    roleLabel: "Spoofed Official Handle (Tier 6)",
-    content: "⚠️ OFFICIAL MANDATORY NOTICE: The Provincial Command orders immediate evacuation of all residential sectors due to imminent tectonic aftershock. Leave building doors unlocked for sweep teams. Evacuate immediately.",
-    likes: 15400,
-    shares: 9800,
-    isFake: true,
-    manipulationType: "Forged Authority Screenshot",
-    biasesTriggered: ["Authority Bias", "False Security Guidelines"],
-    explanation: "This account has a slightly misspelled handle. Official commands do not ask citizens to leave keys or doors unlocked, which is a tactic used by burglars during evacuations."
-  }
-];
-
 export default function Battlefield() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<SkillScores | null>(null);
+  const { language, t } = useLanguage();
   
   // Game state variables
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(90);
-  const [feed, setFeed] = useState<BattlefieldPost[]>(BATTLEFIELD_FEED);
   
   // User selections: map post ID to 'TRUST', 'FLAG', or 'UNASSIGNED'
   const [sortActions, setSortActions] = useState<Record<number, 'TRUST' | 'FLAG'>>({});
@@ -145,6 +56,192 @@ export default function Battlefield() {
     credibilityDelta: 0,
     biasesUnlocked: [] as string[]
   });
+
+  const getLocalizedFeed = (): BattlefieldPost[] => {
+    if (language === 'ur') {
+      return [
+        {
+          id: 1,
+          author: "جیو نیٹ پاکستان",
+          handle: "@GeoNet_PK",
+          avatar: "G",
+          role: "journalist",
+          roleLabel: "تصدیق شدہ خبر رساں ادارہ (سطح ۲)",
+          content: "🚨 زلزلے کی اطلاع: دارالحکومت کے قریبی علاقے میں 6.1 شدت کا زلزلہ آیا ہے۔ امدادی ٹیمیں نقصان کا جائزہ لے رہی ہیں۔ گھروں کے اندر رہیں اور باضابطہ بیانات مانیٹر کریں۔ افواہیں نہ پھیلائیں۔",
+          likes: 4500,
+          shares: 1200,
+          isFake: false,
+          biasesTriggered: [],
+          explanation: "یہ ایک معتبر خبر رساں ادارے کی سائنسی اور متوازن رپورٹ ہے جس میں پرسکون رہنے کی ہدایت کی گئی ہے۔"
+        },
+        {
+          id: 2,
+          author: "پاکستان کرائسز واچ",
+          handle: "@CrisisWatch_PK",
+          avatar: "🤖",
+          role: "bot",
+          roleLabel: "خود کار بوٹ اکاؤنٹ (سطح ۶)",
+          content: "🔥 ہنگامی خبر: زلزلے کے جھٹکوں کی وجہ سے شمالی صنعتی سیکٹر کا نیوکلیئر کولنگ پلانٹ پھٹ گیا ہے! زہریلے کیمیکل کا اخراج جاری ہے! فوراً جنوب کی طرف بھاگیں! حکومت اس خبر کو دبا رہی ہے! ☢️🚨",
+          likes: 8900,
+          shares: 4800,
+          isFake: true,
+          manipulationType: "خوف اور سازش کا مفروضہ",
+          biasesTriggered: ["جلدی بازی کا تعصب", "سازش پسندی"],
+          explanation: "یہ پوسٹ خوف و ہراس، مبالغہ آرائی اور سازشی مفروضے پر مبنی ہے۔ نیوکلیئر پلانٹ بالکل محفوظ ہے اور ایسی خبریں خوف پھیلانے کا سبب بنتی ہیں۔"
+        },
+        {
+          id: 3,
+          author: "زویا خان ولاگز",
+          handle: "@Zoya_K_Fashion",
+          avatar: "Z",
+          role: "influencer",
+          roleLabel: "سوشل میڈیا انفلوئنسر (سطح ۶)",
+          content: "توبہ! کلفٹن کے فلیٹس زلزلے کی وجہ سے مکمل منہدم ہو گئے! میرے ایک فالوور نے ابھی یہ ویڈیو بھیجی ہے۔ انتہائی خوفناک منظر! سب کو وارن کرنے کیلئے اسے ری ٹویٹ کریں! 😱💔 #earthquake #karachi",
+          likes: 12000,
+          shares: 6200,
+          isFake: true,
+          manipulationType: "پرانا اور غلط سیاق و سباق",
+          biasesTriggered: ["بھیڑ چال تعصب", "جذباتی اشتعال"],
+          explanation: "ویڈیو تو حقیقی ہے لیکن یہ 2019 میں دوسرے ملک میں گرائی گئی ایک پرانی عمارت کی ہے۔ بحران کے دوران پرانی ویڈیو شیئر کرنے سے جھوٹا ہراس پھیلتا ہے۔"
+        },
+        {
+          id: 4,
+          author: "ایمرجنسی سپلائز کارپوریشن",
+          handle: "@EmergSupplies_PK",
+          avatar: "📦",
+          role: "advertiser",
+          roleLabel: "تجارتی اشتہار (سطح ۵)",
+          content: "زلزلے بنا بتائے آتے ہیں! اپنے پیاروں کی حفاظت کو یقینی بنائیں۔ ہنگامی راشن اور حفاظتی کٹ پر 50 فیصد رعایت، صرف اگلے 2 گھنٹوں کیلئے! لنک بائیو میں دیکھیں۔ 🛡️⚡",
+          likes: 210,
+          shares: 45,
+          isFake: false,
+          biasesTriggered: ["کمیاب اشیاء کا تعصب"],
+          explanation: "یہ ایک تجارتی اشتہار ہے جو لوگوں کے خوف کا فائدہ اٹھا کر اپنی فروخت بڑھانے کی کوشش کر رہا ہے۔"
+        },
+        {
+          id: 5,
+          author: "حمزہ صدیقی",
+          handle: "@HamzaS_FAST",
+          avatar: "H",
+          role: "citizen",
+          roleLabel: "عام شہری (سطح ۶)",
+          content: "گلشن بلاک 4 میں زلزلے کے شدید جھٹکے محسوس کیے گئے۔ پنکھا جھول رہا تھا اور کتابوں کی الماری گر گئی۔ سب لوگ سڑکوں پر نکل آئے ہیں۔ ہمارے بلاک میں کوئی بڑا نقصان نہیں دکھا۔",
+          likes: 85,
+          shares: 12,
+          isFake: false,
+          biasesTriggered: [],
+          explanation: "یہ ایک عام رہائشی کی حقیقی اور سادہ رپورٹ ہے جس میں بغیر کسی مبالغہ آرائی کے فوری حالات بتائے گئے ہیں۔"
+        },
+        {
+          id: 6,
+          author: "چیف کمشنر سیکیورٹی",
+          handle: "@ChiefComm_Sec_PK",
+          avatar: "🏛️",
+          role: "spoofed_official",
+          roleLabel: "جعلی سرکاری اکاؤنٹ (سطح ۶)",
+          content: "⚠️ سرکاری ہنگامی الرٹ: تمام رہائشی فوری طور پر علاقہ خالی کر دیں کیونکہ ایک اور شدید جھٹکا متوقع ہے۔ تلاشی ٹیموں کی آسانی کیلئے گھروں کے دروازے کھلے چھوڑ دیں۔ فوری عمل کریں۔",
+          likes: 15400,
+          shares: 9800,
+          isFake: true,
+          manipulationType: "جعلی نوٹیفیکیشن ٹیمپلیٹ",
+          biasesTriggered: ["جھوٹی اتھارٹی کا تعصب", "غلط سیکیورٹی ہدایات"],
+          explanation: "یہ ایک جعلی اکاؤنٹ ہے جس کا نام اور ہینڈل ملتا جلتا ہے۔ سرکاری ہدایات میں کبھی بھی چوروں کی آسانی کیلئے دروازے کھلے رکھنے کا نہیں کہا جاتا۔"
+        }
+      ];
+    }
+
+    return [
+      {
+        id: 1,
+        author: "GeoNet Pakistan",
+        handle: "@GeoNet_PK",
+        avatar: "G",
+        role: "journalist",
+        roleLabel: "Verified News Agency (Tier 2)",
+        content: "🚨 SEISMIC UPDATE: A 6.1 magnitude earthquake has hit 25km north-east of the metropolitan area. Civil defence teams are assessing damage. Stay indoors and monitor official portals. Do not panic.",
+        likes: 4500,
+        shares: 1200,
+        isFake: false,
+        biasesTriggered: [],
+        explanation: "This is a reliable report from an established news agency with specific scientific coordinates and a calm, advisory tone."
+      },
+      {
+        id: 2,
+        author: "Pakistan Crisis Watch",
+        handle: "@CrisisWatch_PK",
+        avatar: "🤖",
+        role: "bot",
+        roleLabel: "Coordinated Bot Account (Tier 6)",
+        content: "🔥 URGENT: The nuclear cooling grid in the northern industrial sector has CRACKED due to the tremor! Toxic radiation leak imminent! FLEE SOUTH IMMEDIATELY! Big pharma and authorities are hiding this! ☢️🚨",
+        likes: 8900,
+        shares: 4800,
+        isFake: true,
+        manipulationType: "Urgency Appeal & Conspiracy",
+        biasesTriggered: ["Urgency Bias", "Conspiracy Deflection"],
+        explanation: "This post uses high-intensity alarms, capitalization, and conspiracy framing. There is no radiation leak, and sharing this causes artificial mass panic."
+      },
+      {
+        id: 3,
+        author: "Zoya Khan Vlogs",
+        handle: "@Zoya_K_Fashion",
+        avatar: "Z",
+        role: "influencer",
+        roleLabel: "Social Influencer (Tier 6)",
+        content: "OMG! Clifton high-rise apartments just completely collapsed! Look at this clip a follower sent me. Absolute horror! Retweet to warn everyone! 😱💔 #earthquake #karachi",
+        likes: 12000,
+        shares: 6200,
+        isFake: true,
+        manipulationType: "False Context (Out-of-date media)",
+        biasesTriggered: ["Bandwagon Effect", "Emotional Outrage"],
+        explanation: "The video Zoya shared is real, but it is from a building demolition in another country back in 2019. Sharing it during a crisis spreads dangerous spatial panic."
+      },
+      {
+        id: 4,
+        author: "Emergency Supplies Corp",
+        handle: "@EmergSupplies_PK",
+        avatar: "📦",
+        role: "advertiser",
+        roleLabel: "Commercial Advertiser (Tier 5)",
+        content: "Earthquakes strike without warning! Protect your loved ones. Get our Tactical Disaster Preparedness Kit with 120h rations at 50% discount for the next 2 hours only! Link in bio. 🛡️⚡",
+        likes: 210,
+        shares: 45,
+        isFake: false,
+        biasesTriggered: ["Scarcity Framing"],
+        explanation: "This is commercial spam taking advantage of public fear during a crisis to drive sales."
+      },
+      {
+        id: 5,
+        author: "Hamza Siddiqui",
+        handle: "@HamzaS_FAST",
+        avatar: "H",
+        role: "citizen",
+        roleLabel: "Ordinary Resident (Tier 6)",
+        content: "Ground shook solid for 15 seconds here in Gulshan Block 4. Fan was swaying, bookshelf fell. Everyone is out in the streets. No structural damage visible on our block though.",
+        likes: 85,
+        shares: 12,
+        isFake: false,
+        biasesTriggered: [],
+        explanation: "This is an authentic personal citizen report describing immediate physical surroundings without exaggerations."
+      },
+      {
+        id: 6,
+        author: "Chief Commissioner Security",
+        handle: "@ChiefComm_Sec_PK",
+        avatar: "🏛️",
+        role: "spoofed_official",
+        roleLabel: "Spoofed Official Handle (Tier 6)",
+        content: "⚠️ OFFICIAL MANDATORY NOTICE: The Provincial Command orders immediate evacuation of all residential sectors due to imminent tectonic aftershock. Leave building doors unlocked for sweep teams. Evacuate immediately.",
+        likes: 15400,
+        shares: 9800,
+        isFake: true,
+        manipulationType: "Forged Authority Screenshot",
+        biasesTriggered: ["Authority Bias", "False Security Guidelines"],
+        explanation: "This account has a slightly misspelled handle. Official commands do not ask citizens to leave keys or doors unlocked, which is a tactic used by burglars during evacuations."
+      }
+    ];
+  };
+
+  const localizedFeed = getLocalizedFeed();
 
   useEffect(() => {
     const load = async () => {
@@ -180,7 +277,7 @@ export default function Battlefield() {
 
   const handleAction = (postId: number, action: 'TRUST' | 'FLAG') => {
     setSortActions(prev => ({ ...prev, [postId]: action }));
-    if (activeCardIdx < feed.length - 1) {
+    if (activeCardIdx < localizedFeed.length - 1) {
       setTimeout(() => {
         setActiveCardIdx(activeCardIdx + 1);
       }, 350);
@@ -197,7 +294,7 @@ export default function Battlefield() {
     let unassigned = 0;
     const biases: string[] = [];
 
-    feed.forEach(post => {
+    localizedFeed.forEach(post => {
       const action = sortActions[post.id];
       if (!action) {
         unassigned++;
@@ -224,7 +321,7 @@ export default function Battlefield() {
 
     const totalAnswered = correctTrust + correctFlag + incorrectTrust + incorrectFlag;
     const score = totalAnswered > 0 
-      ? Math.round(((correctTrust + correctFlag) / feed.length) * 100) 
+      ? Math.round(((correctTrust + correctFlag) / localizedFeed.length) * 100) 
       : 0;
 
     // Follower and credibility impacts
@@ -275,8 +372,8 @@ export default function Battlefield() {
     setShowReport(true);
   };
 
-  const progressPercent = ((Object.keys(sortActions).length) / feed.length) * 100;
-  const currentPost = feed[activeCardIdx];
+  const progressPercent = ((Object.keys(sortActions).length) / localizedFeed.length) * 100;
+  const currentPost = localizedFeed[activeCardIdx];
 
   return (
     <div className="flex flex-col min-h-screen bg-[#090d16] text-[#f1f5f9] relative">
@@ -286,7 +383,7 @@ export default function Battlefield() {
       {isPlaying && (
         <div className="w-full bg-rose-950/40 border-b border-rose-900/60 py-2.5 px-4 text-center text-xs font-black text-rose-400 flex items-center justify-center space-x-2 uppercase tracking-widest animate-pulse z-25">
           <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
-          <span>⚠️ EMERGENCY SIMULATION PROTOCOL ACTIVE: SECTOR 4 BREAKING INCIDENT</span>
+          <span>{language === 'ur' ? '⚠️ ہنگامی صورتحال سیمولیشن چالو ہے: زلزلے کی لائیو افواہیں' : '⚠️ EMERGENCY SIMULATION PROTOCOL ACTIVE: SECTOR 4 BREAKING INCIDENT'}</span>
         </div>
       )}
 
@@ -302,26 +399,28 @@ export default function Battlefield() {
             <div className="space-y-3">
               <div className="inline-flex items-center space-x-2 bg-rose-950/30 border border-rose-900/50 px-3 py-1 rounded-full text-rose-400 text-xs font-semibold tracking-wide uppercase">
                 <Terminal className="w-3.5 h-3.5" />
-                <span>Ecosystem Crisis Simulation</span>
+                <span>{language === 'ur' ? 'میدانِ جنگ سیمولیشن' : 'Ecosystem Crisis Simulation'}</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-black text-white">INFORMATION BATTLEFIELD</h2>
+              <h2 className="text-3xl sm:text-4xl font-black text-white">{language === 'ur' ? 'معلوماتی میدانِ جنگ' : 'INFORMATION BATTLEFIELD'}</h2>
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-md mx-auto">
-                "Don't just detect misinformation. Survive it." Evaluate a live stream of crisis news under pressure. Sort facts from rumors.
+                {language === 'ur' 
+                  ? '"صرف غلط معلومات کی شناخت نہ کریں۔ اس کے درمیان بچنا سیکھیں۔" وقت کے شدید دباؤ میں سچ اور جھوٹ کو الگ کریں۔'
+                  : '"Don\'t just detect misinformation. Survive it." Evaluate a live stream of crisis news under pressure. Sort facts from rumors.'}
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-4 text-left pt-2">
+            <div className="grid sm:grid-cols-3 gap-4 text-start pt-2">
               <div className="p-4 bg-slate-900/20 border border-sky-950 rounded-xl space-y-1">
-                <span className="text-[10px] text-sky-400 font-bold uppercase tracking-wider block">Crisis Scenario</span>
-                <p className="text-xs text-slate-400 leading-relaxed font-medium">A sudden 6.1 magnitude earthquake triggers mass public confusion.</p>
+                <span className="text-[10px] text-sky-400 font-bold uppercase tracking-wider block">{language === 'ur' ? 'زلزلے کا چیلنج' : 'Crisis Scenario'}</span>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">{language === 'ur' ? 'ایک اچانک 6.1 شدت کا زلزلہ اور شہریوں میں شدید الجھن اور افواہیں' : 'A sudden 6.1 magnitude earthquake triggers mass public confusion.'}</p>
               </div>
               <div className="p-4 bg-slate-900/20 border border-sky-950 rounded-xl space-y-1">
-                <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider block">Active Threat</span>
-                <p className="text-xs text-slate-400 leading-relaxed font-medium">Coordinated bots, spam ads, and fake official statements flood feeds.</p>
+                <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider block">{language === 'ur' ? 'سرگرم خطرہ' : 'Active Threat'}</span>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">{language === 'ur' ? 'خودکار بوٹس، اشتہارات اور جھوٹے سرکاری بیانات کا سیلاب' : 'Coordinated bots, spam ads, and fake official statements flood feeds.'}</p>
               </div>
               <div className="p-4 bg-slate-900/20 border border-sky-950 rounded-xl space-y-1">
-                <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">Consequences</span>
-                <p className="text-xs text-slate-400 leading-relaxed font-medium">Poor choices crash your credibility and drop your follower reach.</p>
+                <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">{language === 'ur' ? 'نتائج' : 'Consequences'}</span>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">{language === 'ur' ? 'غلط معلومات پر یقین کرنے سے فالوورز اور ساکھ میں شدید کمی ہو گی' : 'Poor choices crash your credibility and drop your follower reach.'}</p>
               </div>
             </div>
 
@@ -329,8 +428,8 @@ export default function Battlefield() {
               onClick={handleStartGame}
               className="px-8 py-4 bg-gradient-to-r from-rose-500 to-indigo-600 font-bold rounded-xl text-white shadow-lg shadow-rose-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center"
             >
-              <Play className="w-5 h-5 mr-2 fill-white" />
-              Launch Battle Protocol (90s)
+              <Play className="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0 fill-white" />
+              {language === 'ur' ? 'سیمولیشن شروع کریں (90 سیکنڈ)' : 'Launch Battle Protocol (90s)'}
             </button>
           </motion.div>
         ) : isPlaying ? (
@@ -342,10 +441,10 @@ export default function Battlefield() {
               
               {/* Progress and countdown display */}
               <div className="flex justify-between items-center bg-slate-950/40 p-4 rounded-xl border border-sky-950/60">
-                <div className="space-y-1.5 flex-grow pr-6">
+                <div className="space-y-1.5 flex-grow pr-6 text-start">
                   <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                    <span>Ecosystem Sorting</span>
-                    <span>{activeCardIdx + 1} of {feed.length} Items</span>
+                    <span>{language === 'ur' ? 'معلومات کی درجہ بندی' : 'Ecosystem Sorting'}</span>
+                    <span>{language === 'ur' ? `پوسٹ ${activeCardIdx + 1} از ${localizedFeed.length}` : `${activeCardIdx + 1} of ${localizedFeed.length} Items`}</span>
                   </div>
                   <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-sky-950">
                     <div 
@@ -355,7 +454,7 @@ export default function Battlefield() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 text-rose-400 font-mono font-bold text-lg bg-rose-950/15 border border-rose-900/40 px-3.5 py-1.5 rounded-xl">
+                <div className="flex items-center space-x-2 rtl:space-x-reverse text-rose-400 font-mono font-bold text-lg bg-rose-950/15 border border-rose-900/40 px-3.5 py-1.5 rounded-xl">
                   <Clock className="w-4 h-4 shrink-0" />
                   <span>{timeLeft}s</span>
                 </div>
@@ -368,13 +467,13 @@ export default function Battlefield() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-950 space-y-5 text-left relative overflow-hidden bg-slate-900/10 min-h-[220px]"
+                  className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-950 space-y-5 text-start relative overflow-hidden bg-slate-900/10 min-h-[220px]"
                 >
                   <div className="flex justify-between items-center border-b border-white/5 pb-3">
                     <div>
                       <div className="text-sm font-extrabold text-white flex items-center">
                         {currentPost.author}
-                        <span className="ml-2 text-[9px] text-slate-500 font-bold font-mono">{currentPost.handle}</span>
+                        <span className="ml-2 rtl:mr-2 rtl:ml-0 text-[9px] text-slate-500 font-bold font-mono">{currentPost.handle}</span>
                       </div>
                       <span className="text-[9px] text-slate-500 uppercase tracking-widest font-black block mt-0.5">{currentPost.roleLabel}</span>
                     </div>
@@ -385,7 +484,7 @@ export default function Battlefield() {
                           ? 'bg-emerald-950 border-emerald-900 text-emerald-400' 
                           : 'bg-rose-950 border-rose-900 text-rose-400'
                       }`}>
-                        {sortActions[currentPost.id] === 'TRUST' ? 'VERIFIED FACT' : 'FLAGGED RUMOR'}
+                        {sortActions[currentPost.id] === 'TRUST' ? (language === 'ur' ? 'بھروسہ مند حقیقت' : 'VERIFIED FACT') : (language === 'ur' ? 'مشکوک افواہ' : 'FLAGGED RUMOR')}
                       </span>
                     )}
                   </div>
@@ -395,11 +494,11 @@ export default function Battlefield() {
                   </p>
 
                   <div className="flex items-center justify-between text-[10px] text-slate-500 border-t border-white/5 pt-3">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
                       <span>👍 {currentPost.likes.toLocaleString()}</span>
                       <span>🔄 {currentPost.shares.toLocaleString()}</span>
                     </div>
-                    <span className="font-semibold italic">Decision Required</span>
+                    <span className="font-semibold italic">{language === 'ur' ? 'فیصلہ درکار ہے' : 'Decision Required'}</span>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -408,17 +507,17 @@ export default function Battlefield() {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => handleAction(currentPost.id, 'TRUST')}
-                  className="py-4 bg-[#0d2a20]/40 border border-emerald-900 hover:border-emerald-400 text-slate-300 font-bold hover:text-emerald-400 hover:bg-[#0d2a20]/80 rounded-2xl text-sm transition-all cursor-pointer flex items-center justify-center space-x-2"
+                  className="py-4 bg-[#0d2a20]/40 border border-emerald-900 hover:border-emerald-400 text-slate-300 font-bold hover:text-emerald-400 hover:bg-[#0d2a20]/80 rounded-2xl text-sm transition-all cursor-pointer flex items-center justify-center space-x-2 rtl:space-x-reverse"
                 >
                   <ShieldCheck className="w-5 h-5" />
-                  <span>Trust & Bulletin</span>
+                  <span>{language === 'ur' ? 'بھروسہ اور شیئر' : 'Trust & Bulletin'}</span>
                 </button>
                 <button
                   onClick={() => handleAction(currentPost.id, 'FLAG')}
-                  className="py-4 bg-red-950/15 border border-red-950 hover:border-red-500 text-slate-300 font-bold hover:text-red-400 hover:bg-red-950/30 rounded-2xl text-sm transition-all cursor-pointer flex items-center justify-center space-x-2"
+                  className="py-4 bg-red-950/15 border border-red-950 hover:border-red-500 text-slate-300 font-bold hover:text-red-400 hover:bg-red-950/30 rounded-2xl text-sm transition-all cursor-pointer flex items-center justify-center space-x-2 rtl:space-x-reverse"
                 >
                   <ShieldAlert className="w-5 h-5" />
-                  <span>Flag as Rumor</span>
+                  <span>{language === 'ur' ? 'افواہ قرار دیں' : 'Flag as Rumor'}</span>
                 </button>
               </div>
 
@@ -429,28 +528,28 @@ export default function Battlefield() {
                   onClick={() => setActiveCardIdx(activeCardIdx - 1)}
                   className="px-4 py-2 bg-slate-900 border border-sky-950 hover:border-sky-800 disabled:opacity-30 rounded-xl text-xs font-bold text-slate-300 transition-all cursor-pointer"
                 >
-                  Previous Item
+                  {language === 'ur' ? 'پچھلا آئٹم' : 'Previous Item'}
                 </button>
                 <button
-                  disabled={activeCardIdx === feed.length - 1}
+                  disabled={activeCardIdx === localizedFeed.length - 1}
                   onClick={() => setActiveCardIdx(activeCardIdx + 1)}
                   className="px-4 py-2 bg-slate-900 border border-sky-950 hover:border-sky-800 disabled:opacity-30 rounded-xl text-xs font-bold text-slate-300 transition-all cursor-pointer"
                 >
-                  Next Item
+                  {language === 'ur' ? 'اگلا آئٹم' : 'Next Item'}
                 </button>
               </div>
 
             </div>
 
             {/* Sidebar Overview Right Column */}
-            <div className="md:col-span-4 space-y-6 text-left">
+            <div className="md:col-span-4 space-y-6 text-start">
               
               {/* Checklist overview box */}
               <div className="glass-panel p-5 rounded-2xl border border-sky-950/60 space-y-4">
-                <h4 className="text-xs text-slate-400 font-bold uppercase tracking-wider">Ecosystem Status</h4>
+                <h4 className="text-xs text-slate-400 font-bold uppercase tracking-wider">{language === 'ur' ? 'فیڈز کا خلاصہ' : 'Ecosystem Status'}</h4>
                 
                 <div className="space-y-2">
-                  {feed.map((post, idx) => {
+                  {localizedFeed.map((post, idx) => {
                     const action = sortActions[post.id];
                     return (
                       <div 
@@ -470,7 +569,7 @@ export default function Battlefield() {
                               ? 'bg-rose-950 border-rose-900/50 text-rose-400'
                               : 'bg-slate-900 border-slate-950 text-slate-500'
                         }`}>
-                          {action === 'TRUST' ? 'TRUST' : action === 'FLAG' ? 'FLAG' : 'PENDING'}
+                          {action === 'TRUST' ? (language === 'ur' ? 'حق' : 'TRUST') : action === 'FLAG' ? (language === 'ur' ? 'افواہ' : 'FLAG') : (language === 'ur' ? 'باقی ہے' : 'PENDING')}
                         </span>
                       </div>
                     );
@@ -481,7 +580,7 @@ export default function Battlefield() {
                   onClick={calculateEcosystemReport}
                   className="w-full py-3 bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider hover:scale-[1.01] transition-all cursor-pointer"
                 >
-                  Submit Final Report
+                  {language === 'ur' ? 'فائنل رپورٹ جمع کریں' : 'Submit Final Report'}
                 </button>
               </div>
 
@@ -497,30 +596,32 @@ export default function Battlefield() {
           >
             
             {/* Top Score stats panel */}
-            <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-500/10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_40px_rgba(56,189,248,0.04)] text-left">
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-sky-500/10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_40px_rgba(56,189,248,0.04)] text-start">
               <div className="space-y-2">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Crisis Standing</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">{language === 'ur' ? 'میڈیا مدافعت الرٹ' : 'Crisis Standing'}</span>
                 <h3 className="text-3xl font-black text-white flex items-center">
-                  SURVIVAL STAGE REPORT
+                  {language === 'ur' ? 'رپورٹ کارڈ' : 'SURVIVAL STAGE REPORT'}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-                  You successfully verified key reports, but fell for coordinated media manipulation tactics.
+                  {language === 'ur' 
+                    ? 'آپ نے کامیابی سے کچھ افواہوں کو پکڑا لیکن الگورتھم کی کچھ چالوں کا شکار ہو گئے۔'
+                    : 'You successfully verified key reports, but fell for coordinated media manipulation tactics.'}
                 </p>
               </div>
 
               <div className="flex gap-4">
                 <div className="bg-slate-950/80 border border-sky-950 p-4 rounded-2xl text-center min-w-[90px]">
-                  <span className="text-[9px] text-slate-500 uppercase font-semibold">Discernment</span>
+                  <span className="text-[9px] text-slate-500 uppercase font-semibold">{language === 'ur' ? 'میڈیا فہم' : 'Discernment'}</span>
                   <div className="text-2xl font-black text-sky-400 mt-1">{stats.score}%</div>
                 </div>
                 <div className="bg-slate-950/80 border border-sky-950 p-4 rounded-2xl text-center min-w-[90px]">
-                  <span className="text-[9px] text-slate-500 uppercase font-semibold">Audience</span>
+                  <span className="text-[9px] text-slate-500 uppercase font-semibold">{language === 'ur' ? 'فالوورز' : 'Audience'}</span>
                   <div className={`text-2xl font-black mt-1 ${stats.followersDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {stats.followersDelta >= 0 ? `+${stats.followersDelta}` : stats.followersDelta}
                   </div>
                 </div>
                 <div className="bg-slate-950/80 border border-sky-950 p-4 rounded-2xl text-center min-w-[90px]">
-                  <span className="text-[9px] text-slate-500 uppercase font-semibold">Credibility</span>
+                  <span className="text-[9px] text-slate-500 uppercase font-semibold">{language === 'ur' ? 'ساکھ' : 'Credibility'}</span>
                   <div className={`text-2xl font-black mt-1 ${stats.credibilityDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {stats.credibilityDelta >= 0 ? `+${stats.credibilityDelta}%` : `${stats.credibilityDelta}%`}
                   </div>
@@ -530,13 +631,15 @@ export default function Battlefield() {
 
             {/* Cognitive Biases Unlocked */}
             {stats.biasesUnlocked.length > 0 && (
-              <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-rose-950/30 text-left space-y-4">
+              <div className="glass-panel p-5 sm:p-6 rounded-2xl border border-rose-950/30 text-start space-y-4">
                 <h4 className="text-sm font-extrabold text-rose-400 flex items-center uppercase tracking-wider">
                   <UserX className="w-5 h-5 mr-2" />
-                  Cognitive Vulnerabilities Exploited
+                  {language === 'ur' ? 'نفسیاتی کمزوریاں جن کا الگورتھم نے فائدہ اٹھایا' : 'Cognitive Vulnerabilities Exploited'}
                 </h4>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  During the crisis pressure, the algorithm exploited the following psychological heuristics in your profile:
+                  {language === 'ur' 
+                    ? 'بحران کے دوران الگورتھم نے آپ کے ان تعصبات کو نشانہ بنایا:'
+                    : 'During the crisis pressure, the algorithm exploited the following psychological heuristics in your profile:'}
                 </p>
                 <div className="flex flex-wrap gap-2.5">
                   {stats.biasesUnlocked.map((bias, bIdx) => (
@@ -552,25 +655,29 @@ export default function Battlefield() {
             )}
 
             {/* Verification Detail breakdown lists */}
-            <div className="space-y-4 text-left">
-              <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">Ecosystem Feed Analysis</h4>
+            <div className="space-y-4 text-start">
+              <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">{language === 'ur' ? 'خبروں کا تفصیلی تجزیہ' : 'Ecosystem Feed Analysis'}</h4>
               <div className="space-y-3">
-                {feed.map((post) => {
+                {localizedFeed.map((post) => {
                   const action = sortActions[post.id];
                   const correct = action === (post.isFake ? 'FLAG' : 'TRUST');
                   
                   let borderStyle = 'border-slate-800/80';
-                  let feedbackText = 'Item Unassessed';
+                  let feedbackText = language === 'ur' ? 'بغیر جانچ چھوڑا گیا' : 'Item Unassessed';
                   let feedbackColor = 'text-slate-500';
 
                   if (action) {
                     if (correct) {
                       borderStyle = 'border-emerald-950/60 bg-emerald-950/5';
-                      feedbackText = action === 'TRUST' ? 'Correctly trusted official fact' : 'Correctly flagged manipulation rumor';
+                      feedbackText = action === 'TRUST' 
+                        ? (language === 'ur' ? 'درست فیصلہ: سچی سرکاری خبر پر بھروسہ کیا' : 'Correctly trusted official fact') 
+                        : (language === 'ur' ? 'درست فیصلہ: جھوٹی افواہ کو پکڑا' : 'Correctly flagged manipulation rumor');
                       feedbackColor = 'text-emerald-400';
                     } else {
                       borderStyle = 'border-rose-950/60 bg-rose-950/5';
-                      feedbackText = action === 'TRUST' ? 'Vulnerable: Trusted fake post' : 'Over-skeptical: Flagged authentic news';
+                      feedbackText = action === 'TRUST' 
+                        ? (language === 'ur' ? 'نفسیاتی تعصب: جھوٹی افواہ پر بھروسہ کر لیا' : 'Vulnerable: Trusted fake post') 
+                        : (language === 'ur' ? 'زیادہ شکی مزاجی: سچی سرکاری خبر کو رد کر دیا' : 'Over-skeptical: Flagged authentic news');
                       feedbackColor = 'text-rose-400';
                     }
                   }
@@ -580,17 +687,17 @@ export default function Battlefield() {
                       <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
                         <div>
                           <span className="text-xs font-bold text-slate-200">{post.author}</span>
-                          <span className="text-[10px] text-slate-500 font-mono ml-2">{post.handle}</span>
+                          <span className="text-[10px] text-slate-500 font-mono ml-2 rtl:mr-2 rtl:ml-0">{post.handle}</span>
                         </div>
                         <span className={`text-[10px] font-black uppercase tracking-wider ${feedbackColor}`}>
                           {feedbackText}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-3 font-sans">
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-3 font-sans font-medium">
                         "{post.content}"
                       </p>
                       <p className="text-xs text-slate-400 leading-relaxed pt-2.5 mt-2.5 border-t border-white/5">
-                        <strong className="text-sky-400">Analysis:</strong> {post.explanation}
+                        <strong className="text-sky-400">{language === 'ur' ? 'تجزیہ:' : 'Analysis:'}</strong> {post.explanation}
                       </p>
                     </div>
                   );
@@ -604,7 +711,7 @@ export default function Battlefield() {
                 onClick={handleStartGame}
                 className="px-6 py-3 bg-slate-900 hover:bg-slate-950 border border-sky-900 hover:border-sky-500 rounded-xl text-xs font-black text-sky-400 hover:text-white uppercase tracking-wider transition-all cursor-pointer"
               >
-                Restart Simulation
+                {language === 'ur' ? 'سیمولیشن دوبارہ شروع کریں' : 'Restart Simulation'}
               </button>
             </div>
 

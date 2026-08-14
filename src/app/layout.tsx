@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "An adaptive AI-powered media literacy platform that turns misinformation exposure into interactive training, teaching you how to investigate claims, evaluate evidence, and make informed decisions.",
 };
 
+import { LanguageProvider } from "@/context/LanguageContext";
+
 export default function RootLayout({
   children,
 }: {
@@ -20,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth">
       <body className={`${inter.variable} font-sans min-h-full bg-[#090d16] text-[#f1f5f9] flex flex-col antialiased`}>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
