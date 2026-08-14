@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Cpu, CheckCircle, ArrowRight, 
+  Cpu, ArrowRight, 
   ShieldCheck, RefreshCw, XCircle, Search, HelpCircle as HelpIcon, 
   Network, Database, HelpCircle
 } from 'lucide-react';
@@ -22,6 +22,38 @@ interface LabPair {
   explanation: string;
 }
 
+interface AtomicClaim {
+  text: string;
+  status: 'SUPPORTED' | 'CONTRADICTED' | 'UNVERIFIED';
+  why: string;
+}
+
+interface GraphNode {
+  id: string;
+  label: string;
+  type: 'claim' | 'source' | 'evidence';
+  description: string;
+  status?: string;
+}
+
+interface GraphEdge {
+  from: string;
+  to: string;
+  relationship: string;
+}
+
+interface VerificationResult {
+  verdict: string;
+  confidence: number;
+  summary: string;
+  claims: AtomicClaim[];
+  graph: {
+    nodes: GraphNode[];
+    edges: GraphEdge[];
+  };
+  mode?: string;
+}
+
 export default function ManipulationLab() {
   const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'headlines' | 'sleuth'>('headlines');
@@ -34,8 +66,8 @@ export default function ManipulationLab() {
   // Tab 2: Sleuth engine states
   const [claimInput, setClaimInput] = useState('');
   const [verifying, setVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<any | null>(null);
-  const [selectedGraphNode, setSelectedGraphNode] = useState<any | null>(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
+  const [selectedGraphNode, setSelectedGraphNode] = useState<GraphNode | null>(null);
 
   const getLocalizedLabPairs = (): LabPair[] => {
     if (language === 'ur') {
@@ -356,7 +388,7 @@ export default function ManipulationLab() {
                     <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">{t.lab_raw_fact}</span>
                   </div>
                   <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans font-medium">
-                    "{currentPair.original}"
+                    &quot;{currentPair.original}&quot;
                   </p>
                 </div>
                 <div className="mt-6 text-[10px] text-slate-500 uppercase font-semibold">{language === 'ur' ? 'لہجہ: غیر جانبدار، سائنسی، متوازن' : 'Tones: Objective, scientific, measured'}</div>
@@ -369,7 +401,7 @@ export default function ManipulationLab() {
                     <span className="text-xs font-bold uppercase tracking-wider text-rose-400">{t.lab_manipulated}</span>
                   </div>
                   <p className="text-sm sm:text-base text-rose-100 font-extrabold leading-relaxed font-sans">
-                    "{currentPair.manipulated}"
+                    &quot;{currentPair.manipulated}&quot;
                   </p>
                 </div>
                 <div className="mt-6 text-[10px] text-rose-400/80 uppercase font-bold">{t.lab_manipulated}: {currentPair.technique}</div>
@@ -567,7 +599,7 @@ export default function ManipulationLab() {
                         </h4>
                         
                         <div className="space-y-3">
-                          {verificationResult.claims.map((claim: any, cIdx: number) => (
+                          {verificationResult.claims.map((claim: AtomicClaim, cIdx: number) => (
                             <div key={cIdx} className="p-3 bg-slate-950/60 border border-sky-950 rounded-lg flex items-start space-x-2.5 rtl:space-x-reverse">
                               {claim.status === 'SUPPORTED' ? (
                                 <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
@@ -598,7 +630,7 @@ export default function ManipulationLab() {
 
                       {/* Display Node buttons map */}
                       <div className="flex flex-wrap gap-2.5 pt-1">
-                        {verificationResult.graph?.nodes.map((node: any) => {
+                        {verificationResult.graph?.nodes.map((node: GraphNode) => {
                           const isSelected = selectedGraphNode?.id === node.id;
                           
                           let style = 'border-slate-800 text-slate-400 hover:border-slate-700 bg-slate-950/30';
@@ -641,16 +673,16 @@ export default function ManipulationLab() {
                       <div className="pt-2 space-y-2 border-t border-sky-950 text-[10px] text-slate-500 font-semibold uppercase">
                         <div>{language === 'ur' ? 'شواہد کا باہمی تعلق:' : 'Map Connections:'}</div>
                         <div className="space-y-1 bg-slate-950/50 p-2.5 rounded-lg border border-sky-950/60 font-mono text-[9px] text-slate-400 normal-case">
-                          {verificationResult.graph?.edges.map((edge: any, eIdx: number) => {
-                            const fromNode = verificationResult.graph.nodes.find((n: any) => n.id === edge.from);
-                            const toNode = verificationResult.graph.nodes.find((n: any) => n.id === edge.to);
+                          {verificationResult.graph?.edges.map((edge: GraphEdge, eIdx: number) => {
+                            const fromNode = verificationResult.graph.nodes.find((n: GraphNode) => n.id === edge.from);
+                            const toNode = verificationResult.graph.nodes.find((n: GraphNode) => n.id === edge.to);
                             const fromLabel = fromNode ? fromNode.label : edge.from;
                             const toLabel = toNode ? toNode.label : edge.to;
                             return (
                               <div key={eIdx} className="flex items-center space-x-1.5 rtl:space-x-reverse py-0.5">
-                                <span className="font-bold text-slate-200">"{fromLabel.slice(0, 15)}..."</span>
+                                <span className="font-bold text-slate-200">&quot;{fromLabel.slice(0, 15)}...&quot;</span>
                                 <span className="text-purple-400 font-bold font-sans">── {edge.relationship} ──&gt;</span>
-                                <span className="font-bold text-slate-200">"{toLabel.slice(0, 15)}..."</span>
+                                <span className="font-bold text-slate-200">&quot;{toLabel.slice(0, 15)}...&quot;</span>
                               </div>
                             );
                           })}

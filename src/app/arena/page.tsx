@@ -8,7 +8,7 @@ import {
   Flame, Trophy, UserCheck, Shield, ChevronRight, Activity, RotateCcw
 } from 'lucide-react';
 import { dbService, Profile, SkillScores, getUserRank } from '@/lib/db';
-import { Scenario } from '@/lib/scenariosData';
+import type { Scenario } from '@/lib/scenariosData';
 import Header from '@/components/Header';
 
 import { useLanguage } from '@/context/LanguageContext';

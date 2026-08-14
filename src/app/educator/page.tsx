@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Users, Award, BarChart2, TrendingUp, Search, Download, HelpCircle, 
-  Settings, CheckCircle, AlertTriangle, ArrowUpRight, Shield, ShieldAlert,
-  Database, RefreshCw, Filter, School, GraduationCap
+  Search, Download, CheckCircle, Database, RefreshCw, School, GraduationCap
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
@@ -70,25 +68,24 @@ const CAMPUSES = [
 export default function EducatorDashboard() {
   const { language } = useLanguage();
   const [useSimulated, setUseSimulated] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [realLeaderboard, setRealLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCampus, setSelectedCampus] = useState('All Campuses');
   const [exportSuccess, setExportSuccess] = useState(false);
 
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
+    React.startTransition(() => {
+      setMounted(true);
+    });
     const loadRealData = async () => {
-      setLoading(true);
       try {
         const list = await dbService.getLeaderboard();
-        setRealLeaderboard(list);
+        React.startTransition(() => {
+          setRealLeaderboard(list);
+        });
       } catch (e) {
         console.warn("Failed to load real database entries for dashboard", e);
-      } finally {
-        setLoading(false);
       }
     };
     loadRealData();

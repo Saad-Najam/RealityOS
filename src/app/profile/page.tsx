@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { Flame, Brain, ArrowRight, Play } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { ShieldCheck, Flame, Trophy, Award, Brain, ArrowRight, UserCheck, Play, HelpCircle, EyeOff } from 'lucide-react';
 import { dbService, Profile, SkillScores, getUserRank } from '@/lib/db';
 import Header from '@/components/Header';
 import { useLanguage } from '@/context/LanguageContext';
@@ -17,14 +16,18 @@ export default function ProfileDNA() {
   const { language, t } = useLanguage();
 
   useEffect(() => {
-    setMounted(true);
+    React.startTransition(() => {
+      setMounted(true);
+    });
     const loadData = async () => {
       const p = await dbService.getProfile();
       const s = await dbService.getSkillScores();
       const b = await dbService.getBaselineSkillScores();
-      setProfile(p);
-      setSkills(s);
-      setBaseline(b);
+      React.startTransition(() => {
+        setProfile(p);
+        setSkills(s);
+        setBaseline(b);
+      });
     };
     loadData();
   }, []);

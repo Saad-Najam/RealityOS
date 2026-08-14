@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, ShieldCheck, Clock, Shield, 
-  HelpCircle, Eye, AlertTriangle, RefreshCw, Terminal, 
-  UserX, Heart, Share2, Flame, Trophy, Play, CheckCircle2, XCircle
+  HelpCircle, AlertTriangle, RefreshCw, Terminal, Play, UserX
 } from 'lucide-react';
 import { dbService, Profile, SkillScores } from '@/lib/db';
 import Header from '@/components/Header';

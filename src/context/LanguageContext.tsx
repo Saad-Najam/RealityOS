@@ -20,11 +20,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedLang = localStorage.getItem('realityos_language') as Language;
-      if (storedLang === 'en' || storedLang === 'ur') {
-        setLanguageState(storedLang);
+      if ((storedLang === 'en' || storedLang === 'ur') && storedLang !== language) {
+        React.startTransition(() => {
+          setLanguageState(storedLang);
+        });
       }
     }
-  }, []);
+  }, [language]);
 
   // Update layout direction dynamically when language changes
   useEffect(() => {

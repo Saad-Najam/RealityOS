@@ -26,9 +26,11 @@ export default function LeaderboardView() {
   const loadData = async () => {
     const p = await dbService.getProfile();
     const l = await dbService.getLeaderboard();
-    setProfile(p);
-    setSelectedCampus(p.campus);
-    setList(l);
+    React.startTransition(() => {
+      setProfile(p);
+      setSelectedCampus(p.campus);
+      setList(l);
+    });
   };
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, User } from '@supabase/supabase-js';
 import { INITIAL_SCENARIOS, Scenario } from './scenariosData';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -84,7 +84,7 @@ const DEFAULT_LEADERBOARD: LeaderboardEntry[] = [
   { username: 'GraphWizard', campus: 'IBA Karachi', score: 620 }
 ];
 
-let cachedUser: any = null;
+let cachedUser: User | null = null;
 export async function ensureAuth() {
   if (!supabase) return null;
   if (cachedUser) return cachedUser;
